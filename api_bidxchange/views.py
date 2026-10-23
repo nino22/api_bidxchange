@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from decimal import Decimal
 import random
 import token
 
@@ -119,7 +120,11 @@ def criar_conta(request):
                         eumainstuicaodeensino = serializer.validated_data.get('eumainstuicaodeensino', False)
                     )
                     conta = Conta.objects.get(email=serializer.validated_data['email'])
-                    equipe.objects.create(nomeEquipe=serializer.validated_data.get('nomeFantasia', ''), donoDaEquipe=conta)
+                    equipe1 = equipe.objects.create(nomeEquipe=serializer.validated_data.get('nomeFantasia', ''), donoDaEquipe=conta)
+                    membro1 = membro.objects.create(membro=serializer.validated_data['nomeCompleto'], email=serializer.validated_data['email'], cargo="Administrador principal", ultimoAcesso=str(timezone.now()), status="Ativo", acoes="Administrador principal")
+  
+                    equipe_membro.objects.create(equipe=equipe1, membro_equipe=membro1)
+                    
                     return Response({'mensagem': 'conta criada'}, status=status.HTTP_201_CREATED)
                 else:
                     return Response({'erro': 'CNPJ inválido'}, status=status.HTTP_400_BAD_REQUEST)
@@ -260,8 +265,7 @@ def conta(request):
         usuarioDoToken = Conta.objects.get(email=tokenPego.user.email)
         conta = Conta.objects.get(id=usuarioDoToken.id)
         contaSerializer = ContaSerializer(conta)
-        if (contaSerializer.is_valid()):
-            return Response(contaSerializer.data, status=status.HTTP_200_OK)
+        return Response(contaSerializer.data, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
     
@@ -564,18 +568,19 @@ def enviar_mensagem_suporte(request):
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
     
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def enviar_email_senha(request):
     try:
-        digito1 = random.randint(1, 100)
-        digito2 = random.randint(1, 100)
-        digito3 = random.randint(1, 100)
+        digito1 = random.randint(1, 9)
+        digito2 = random.randint(1, 9)
+        digito3 = random.randint(1, 9)
         codigoDeVerificacao = str(digito1) + '' + str(digito2) + '' + str(digito3)
         email = request.data['email']
-        usuarioDoToken = Conta.objects.get(email=email)
-                
-        usuarioDoToken.codigoDeVerificacao = codigoDeVerificacao
+        usuario = Conta.objects.get(email=email)
         
-        usuarioDoToken.save()   
+        usuario.codigoDeVerificacao = Decimal(codigoDeVerificacao)
+        
+        usuario.save()   
                 
         send_mail(
             subject=f'Código de verificação - BidXChange',
@@ -594,18 +599,24 @@ def enviar_email_senha(request):
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def mudar_senha(request):
     try:
         codigoDeVerificacao = request.data['codigoDeVerificacao']
         email = request.data['email']
         senha = request.data['senha']
-        senhaRepetida = request.data['senha']
+        senhaRepetida = request.data['senhaRepetida']
         conta = Conta.objects.get(email=email)
         
-        if (codigoDeVerificacao == conta.codigoDeVerificacao):
+        if (Decimal(codigoDeVerificacao) == conta.codigoDeVerificacao):
             
             if (senhaRepetida == senha):
-                
+                conta.senha = senha
+                conta.save()
+                return Response(
+                    {'Senha': 'As senha foi salva'},
+                    status=status.HTTP_200_OK 
+                )
             else:
                 return Response(
                     {'Senha invalida': 'As senhas não coincidem entre si'},
@@ -628,14 +639,28 @@ def enviar_convite(request):
         usuarioDoToken = Conta.objects.get(email=tokenPego.user.email)
 
         if serializer.is_valid():
-            convites.objects.create(email=request.data['email'], cargo=request.data['cargo'], enviado=timezone.now(), validade=timezone.now()+ timedelta(weeks=1), quemEnviou=usuarioDoToken)
-
-            return Response({'mensagem': "Convite enviado"}, status=status.HTTP_200_OK)
+            membro1 = equipe_membro.objects.get(membro_equipe=membro.objects.get(email=request.data['email']))
+            
+            return Response({'mensagem': "Este e-mail já faz parte da equipe. "}, status=status.HTTP_409_CONFLICT)    
         else:
             return Response({'mensagem': "Json invalido"}, status=status.HTTP_400_BAD_REQUEST)
+        
+    except membro.DoesNotExist as e: 
+        convites.objects.create(email=request.data['email'], cargo=request.data['cargo'], enviado=timezone.now(), validade=timezone.now()+ timedelta(weeks=1), quemEnviou=usuarioDoToken)
+        send_mail(
+            subject=f'Convite para a equipe {equipe.objects.get(donoDaEquipe=usuarioDoToken)} | BidXchange',
+            message=f'{usuarioDoToken} convidou você para participar de {equipe.objects.get(donoDaEquipe=usuarioDoToken)} no BidXChange. \n O seu perfil terá cargo de {request.data['cargo']}. Se ainda não tiver uma conta, você poderá criá-la diretamente pelo convite.',
+            from_email='nicolasrenovado12@gmail.com',
+            recipient_list=[request.data['email']],
+            fail_silently=False,
+        )
+                    
+        return Response({'mensagem': "Convite enviado"}, status=status.HTTP_200_OK)
+        
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
-
+    
+    
 @api_view(['GET'])
 def ver_convites(request):
     try:
@@ -675,7 +700,7 @@ def aceitar_convite(request, email):
         parteDoToken = request.META.get('HTTP_AUTHORIZATION').split(' ')
         tokenPego = Token.objects.get(key=parteDoToken[1])
         conta = Conta.objects.get(email=email)        
-        
+        # Verificar se a conta já existe e após isso aceitar o convite. Se ela não existir redirecionar para um html que cria a conta.
         membro = membro.objects.create(
             membro=conta.nomeCompleto,
             email=conta.email,

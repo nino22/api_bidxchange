@@ -78,7 +78,7 @@ class membro(models.Model):
     membro = models.CharField(max_length=100)
     email = models.CharField(max_length=100)
     cargo = models.CharField(max_length=100) 
-    ultimoAcesso = models.DateField() 
+    ultimoAcesso = models.DateTimeField() 
     status = models.CharField(max_length=100) 
     acoes = models.CharField(max_length=100)
 
@@ -116,7 +116,7 @@ class equipe(models.Model):
 
 class equipe_membro(models.Model):
     equipe = models.ForeignKey(equipe, on_delete=models.CASCADE, related_name='equipe', null=True)
-    membro_quipe = models.ForeignKey(membro, on_delete=models.CASCADE, related_name='membro_equipe', null=True)
+    membro_equipe = models.ForeignKey(membro, on_delete=models.CASCADE, related_name='membro_equipe', null=True)
 
     def __str__(self):
         return f"equipe: {self.equipe}, membro equipe: {self.membro_quipe}"
