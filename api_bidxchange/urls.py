@@ -23,8 +23,7 @@ urlpatterns = [
     path('conta/enviarConvite/', views.enviar_convite, name='enviar_convite'), # testado
     path('conta/verConvites/', views.ver_convites, name='ver_convites'), # testado
     path('conta/deletarConvite/<int:id>/', views.deletar_convite, name='deletar_convite'),
-    path('conta/aceitarConvite/<str:email>/', views.aceitar_convite, name='aceitar_convite'),
-#   path('conta/suporteEnviarEmail/', views.aceitar_convite, name='aceitar_convite'),
-#   path('conta/esqueciSenha/enviarEmail', views.aceitar_convite, name='aceitar_convite'),
-#   path('conta/esqueciSenha/mudarSenha', views.aceitar_convite, name='aceitar_convite'),
+    path('conta/suporteEnviarEmail/', views.enviar_mensagem_suporte, name='enviar_mensagem_suporte'), # testado
+    path('conta/esqueciSenha/enviarEmail/', views.enviar_email_senha, name='enviar_email_senha'), # testado
+#   path('conta/esqueciSenha/mudarSenha/', views.aceitar_convite, name='aceitar_convite'),
 ]

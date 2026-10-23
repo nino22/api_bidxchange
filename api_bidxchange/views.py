@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import random
 import token
 
 from django.shortcuts import render
@@ -14,6 +15,7 @@ from .serializers import ContaModificacaoSerializer, ContaSerializer, CotacaoFor
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from django.utils import timezone
+from django.core.mail import send_mail
 
 import json
 
@@ -537,16 +539,85 @@ def ver_proposta_id(request, id):
         
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
-    
-def enviar_mensagem_suporte(reques):
+
+@api_view(['POST'])
+def enviar_mensagem_suporte(request):
     try:
         assunto = request.data['assunto']
-        descricao = request.data['descricao']        
+        descricao = request.data['descricao']
         emailParaResposta = request.data['emailParaResposta']
-        
-                
+
+        send_mail(
+            subject=f'{assunto}',
+            message=f'{descricao} \n email para resposta: {emailParaResposta}',
+            from_email='nicolasrenovado12@gmail.com',
+            recipient_list=['nicolasrenovado12@gmail.com'],
+            fail_silently=False,
+        )
+
+        return Response(
+            {'mensagem': 'Mensagem enviada com sucesso!'},
+            status=status.HTTP_200_OK
+        )
+
     except Exception as e:
-            return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)    
+        return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['POST'])
+def enviar_email_senha(request):
+    try:
+        digito1 = random.randint(1, 100)
+        digito2 = random.randint(1, 100)
+        digito3 = random.randint(1, 100)
+        codigoDeVerificacao = str(digito1) + '' + str(digito2) + '' + str(digito3)
+        email = request.data['email']
+        usuarioDoToken = Conta.objects.get(email=email)
+                
+        usuarioDoToken.codigoDeVerificacao = codigoDeVerificacao
+        
+        usuarioDoToken.save()   
+                
+        send_mail(
+            subject=f'Código de verificação - BidXChange',
+            message=f'Código de verificação: {codigoDeVerificacao}',
+            from_email='nicolasrenovado12@gmail.com',
+            recipient_list=['nicolasrenovado12@gmail.com'],
+            fail_silently=False,
+        )
+        
+        
+        return Response(
+            {'mensagem': 'Email enviado'},
+            status=status.HTTP_200_OK
+        )
+    except Exception as e:
+        return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+def mudar_senha(request):
+    try:
+        codigoDeVerificacao = request.data['codigoDeVerificacao']
+        email = request.data['email']
+        senha = request.data['senha']
+        senhaRepetida = request.data['senha']
+        conta = Conta.objects.get(email=email)
+        
+        if (codigoDeVerificacao == conta.codigoDeVerificacao):
+            
+            if (senhaRepetida == senha):
+                
+            else:
+                return Response(
+                    {'Senha invalida': 'As senhas não coincidem entre si'},
+                    status=status.HTTP_400_BAD_REQUEST 
+                )
+        else:
+            return Response(
+                {'codigoDeVerificacao': 'Código de verificação incorreto'},
+                status=status.HTTP_400_BAD_REQUEST 
+            )
+    except Exception as e:
+        return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)   
 
 @api_view(['POST'])
 def enviar_convite(request):
@@ -591,9 +662,10 @@ def ver_convites(request):
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
+@api_view(['DELETE'])
 def deletar_convite(request, id):
     try:
-        convites.objects.get(id=id)
+        convites.objects.get(id=id).delete()
         return Response({"Convite deletado com sucesso"}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
