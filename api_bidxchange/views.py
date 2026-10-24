@@ -645,7 +645,6 @@ def enviar_convite(request):
         if serializer.is_valid():
             membro1 = membro.objects.get(email=serializer.data['email'])
             equipe1 = equipe.objects.get(donoDaEquipe=Conta.objects.get(email=usuarioDoToken.email))
-            print(equipe1)
             equipe_membro1 = equipe_membro.objects.get(equipe=equipe1, membro_equipe=membro1)
             
             return Response({'mensagem': "Este e-mail já faz parte da equipe. "}, status=status.HTTP_409_CONFLICT)    
@@ -909,9 +908,8 @@ def membros_equipe(request):
         parteDoToken = request.META.get('HTTP_AUTHORIZATION').split(' ')
         tokenPego = Token.objects.get(key=parteDoToken[1])
         usuarioDoToken = Conta.objects.get(email=tokenPego.user.email)
-        a = Conta.objects.get(email=usuarioDoToken.email)
-        print(a)
-        equipe_membros = equipe_membro.objects.all()
+        membro
+        equipe_membros = equipe_membro.objects.all().filter(equipe=equipe.objects.get(donoDaEquipe=Conta.objects.get(email=usuarioDoToken.email)))
         dados = [
             {
                 'equipe_membro': equipe_membro.membro_equipe.id,
