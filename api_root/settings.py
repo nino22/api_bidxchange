@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure-2#&+m@ohsr2-8#ye-($yl%f60=80wpu+ypgeb7$0&nl*a_z=2v
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'testserver',
+]
 
 
 # Application definition
@@ -56,10 +60,12 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'api_root.urls'
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -70,6 +76,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'api_root.wsgi.application'
 

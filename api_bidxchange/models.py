@@ -6,7 +6,7 @@ class Conta(models.Model):
     nomeCompleto = models.CharField(max_length=100, unique=True)
     email = models.EmailField(max_length=100, unique=True) 
     razaoSocial = models.CharField(max_length=100)
-    nomeFantasia = models.CharField(max_length=100, blank=True, null=True) 
+    nomeFantasia = models.CharField(max_length=100, blank=True, null=True, unique=True) 
     cnpj = models.CharField(max_length=20, unique=True)
     telefone = models.DecimalField(max_digits=15, decimal_places=0)
     endereco = models.CharField(max_length=100)
@@ -108,7 +108,7 @@ class Proposta(models.Model):
         return f"Condicoes {self.condicoesEDetalhesDoPagamento}"
 
 class equipe(models.Model):
-    nomeEquipe = models.CharField(max_length=100, default='nenhuma') 
+    nomeEquipe = models.CharField(max_length=100, default='nenhuma', unique=True) 
     donoDaEquipe = models.ForeignKey(Conta, on_delete=models.CASCADE, related_name='donoDaEquipe')
 
     def __str__(self):

@@ -20,10 +20,11 @@ urlpatterns = [
     path('conta/criarProposta/', views.criar_proposta, name='criar_proposta'), # testado
     path('conta/verPropostas/', views.ver_propostas, name='ver_propostas'), # testado
     path('conta/verPropostaId/<int:id>/', views.ver_proposta_id, name='ver_proposta_id'), # testado
-    path('conta/enviarConvite/', views.enviar_convite, name='enviar_convite'),
+    path('conta/enviarConvite/', views.enviar_convite, name='enviar_convite'), # testado
     path('conta/verConvites/', views.ver_convites, name='ver_convites'), # testado
     path('conta/deletarConvite/<int:id>/', views.deletar_convite, name='deletar_convite'), # testado
     path('conta/suporteEnviarEmail/', views.enviar_mensagem_suporte, name='enviar_mensagem_suporte'), # testado
     path('conta/esqueciSenha/enviarEmail/', views.enviar_email_senha, name='enviar_email_senha'), # testado
     path('conta/esqueciSenha/mudarSenha/', views.mudar_senha, name='mudar_senha'), # testado
+    path('conta/membrosEquipe/', views.membros_equipe, name='membros_equipe')
 ]

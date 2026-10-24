@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form action="" method="post">
+        {% csrf_token %}
+
+        <label for="nomeCompleto">Nome completo:</label>
+        <input type="text" id="nomeCompleto" name="nomeCompleto" maxlength="100" required>
+        <br><br>
+
+        <label for="email">E-mail:</label>
+        <input type="email" id="email" name="email" maxlength="100" value="{{ email }}" required>
+        <br><br>
+
+        <label for="razaoSocial">Razão social:</label>
+        <input type="text" id="razaoSocial" name="razaoSocial" maxlength="100" required>
+        <br><br>
+
+        <label for="nomeFantasia">Nome fantasia:</label>
+        <input type="text" id="nomeFantasia" name="nomeFantasia" maxlength="100">
+        <br><br>
+
+        <label for="cnpj">CNPJ:</label>
+        <input type="text" id="cnpj" name="cnpj" maxlength="20" required>
+        <br><br>
+
+        <label for="telefone">Telefone:</label>
+        <input type="tel" id="telefone" name="telefone" required>
+        <br><br>
+
+        <label for="endereco">Endereço:</label>
+        <input type="text" id="endereco" name="endereco" maxlength="100" required>
+        <br><br>
+
+        <label for="senha">Senha:</label>
+        <input type="password" id="senha" name="senha" required>
+        <br><br>
+
+        <label for="eumainstuicaodeensino">
+            <input
+                type="checkbox"
+                id="eumainstuicaodeensino"
+                name="eumainstuicaodeensino"
+                value="true"
+            >
+            Sou uma instituição de ensino
+        </label>
+        <br><br>
+        
+        {{ resultado }} <br> <br>
+        <button type="submit">Enviar</button>
+    </form>
+</body>
+</html>
