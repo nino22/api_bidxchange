@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Conta, Cotacao, CotacaoFornecedor, Proposta, convites
+from .models import Conta, Cotacao, CotacaoFornecedor, Proposta, convites, pesosELimitesObjetivos
 
 class ContaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,6 +19,11 @@ class ContaModificacaoSerializer(serializers.ModelSerializer):
 class CotacaoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cotacao
+        fields = ['nomeDaCotacao', 'Categoria', 'descricaoERequisitos', 'quantidade', 'unidadesDeMedida', 'receberPropostasaAte', 'entregaAte', 'urgencia']
+        
+class CotacaoSerializer2(serializers.ModelSerializer):
+    class Meta:
+        model = Cotacao
         fields = '__all__'
         
 class CotacaoFornecedorSerializer(serializers.ModelSerializer):
@@ -29,9 +34,25 @@ class CotacaoFornecedorSerializer(serializers.ModelSerializer):
 class PropostaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Proposta 
-        fields = '__all__'
+        fields = ['valorTotal', 'dataDeEntrega', 'condicoesEDetalhesDoPagamento', 'marcaOuFabricante', 'observacoesComerciais', 'emiteDocumentoFiscal', 'cotacao']
 
 class ConviteSerializer(serializers.ModelSerializer):
     class Meta:
         model = convites
         fields = ['email', 'cargo']
+
+class PesosELimitesObjetivosSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = pesosELimitesObjetivos
+        fields = [
+            'documentoFiscal',
+            'exigirNotaFiscal',
+            'melhorPreco',
+            'valorMaximo',
+            'entregaMaisRapida',
+            'entregaAte'
+        ]
+class PesosELimitesObjetivosSerializer2(serializers.ModelSerializer):
+    class Meta:
+        model = pesosELimitesObjetivos
+        fields = '__all__'

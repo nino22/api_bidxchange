@@ -28,8 +28,8 @@ class Cotacao(models.Model):
     urgencia = models.CharField(max_length=100)
     melhorOferta = models.CharField(max_length=100, default='Sem propostas')
     status = models.CharField(max_length=100, default='Aberta')
-    contaCotacao = models.ForeignKey(Conta, on_delete=models.CASCADE, default=1)
     temProposta = models.BooleanField(null=True)
+    contaCotacao = models.ForeignKey(Conta, on_delete=models.CASCADE, default=1)
     
     
     def __str__(self):
@@ -38,7 +38,7 @@ class Cotacao(models.Model):
 
 class Avaliacoes(models.Model):
     cotacao = models.ForeignKey(Cotacao, on_delete=models.CASCADE, null=True)
-    fornecedor = models.ForeignKey(Conta, on_delete=models.CASCADE,null=True )
+    fornecedor = models.ForeignKey(Conta, on_delete=models.CASCADE, null=True)
     nota = models.DecimalField(max_digits=1, decimal_places=0, validators=[MaxValueValidator(5)])
     situacao = models.CharField(max_length=100)
     status = models.CharField(max_length=100)
@@ -93,19 +93,7 @@ class mensagem(models.Model):
 
     def __str__(self):
         return f"Mensagem de {self.remetente} para {self.destinario}: {self.assunto}"
-    
-class Proposta(models.Model):
-    valorTotal = models.DecimalField(max_digits=14, decimal_places=2)       
-    dataDeEntrega = models.DateField() 
-    condicoesEDetalhesDoPagamento = models.CharField(max_length=100) 
-    marcaOuFabricante = models.CharField(max_length=100) 
-    observacoesComerciais = models.CharField(max_length=100)
-    emiteDocumentoFiscal = models.BooleanField()
-    cotacao = models.ForeignKey(Cotacao, on_delete=models.CASCADE, null=True)
-    
-    
-    def __str__(self):
-        return f"Condicoes {self.condicoesEDetalhesDoPagamento}"
+  
 
 class equipe(models.Model):
     nomeEquipe = models.CharField(max_length=100, default='nenhuma', unique=True) 
@@ -128,3 +116,29 @@ class mensagensEmail(models.Model):
 
     def __str__(self):
         return f"assunto: {self.assunto}"
+
+class pesosELimitesObjetivos(models.Model):
+    documentoFiscal = models.CharField(max_length=100) 
+    exigirNotaFiscal = models.BooleanField(default=True)
+    melhorPreco = models.CharField(max_length=100) 
+    valorMaximo = models.DecimalField(max_digits=10000000, decimal_places=2, default=0, null=True, blank=True)
+    entregaMaisRapida = models.CharField(max_length=100) 
+    entregaAte = models.DateField(null=True, blank=True)
+        
+class Proposta(models.Model):
+    valorTotal = models.DecimalField(max_digits=14, decimal_places=2)       
+    dataDeEntrega = models.DateField() 
+    condicoesEDetalhesDoPagamento = models.CharField(max_length=100) 
+    marcaOuFabricante = models.CharField(max_length=100) 
+    observacoesComerciais = models.CharField(max_length=100)
+    emiteDocumentoFiscal = models.BooleanField()
+    cotacao = models.ForeignKey(Cotacao, on_delete=models.CASCADE, null=True)
+    pesosELimitesObjetivos = models.ForeignKey(pesosELimitesObjetivos, on_delete=models.CASCADE, null=True)
+    
+    def __str__(self):
+        return f"Condicoes {self.condicoesEDetalhesDoPagamento}"
+
+class notificacoes(models.Model):
+    titulo = models.CharField(max_length=100) 
+    descrição = models.CharField(max_length=100) 
+    lida = models.BooleanField()

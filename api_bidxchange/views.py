@@ -12,8 +12,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import Avaliacoes, Conta, Cotacao, CotacaoFornecedor, FornecedoresFavoritos, mensagem, Proposta, convites, membro, equipe, equipe_membro, convites
-from .serializers import ContaModificacaoSerializer, ContaSerializer, CotacaoFornecedorSerializer, CotacaoSerializer, PropostaSerializer, ConviteSerializer
+from .models import Avaliacoes, Conta, Cotacao, CotacaoFornecedor, FornecedoresFavoritos, mensagem, Proposta, convites, membro, equipe, equipe_membro, convites, pesosELimitesObjetivos
+from .serializers import ContaModificacaoSerializer, ContaSerializer, CotacaoFornecedorSerializer, CotacaoSerializer, CotacaoSerializer2, PesosELimitesObjetivosSerializer, PropostaSerializer, ConviteSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from django.utils import timezone
@@ -194,7 +194,7 @@ def criar_cotacao(request):
                 parteDoToken = request.META.get('HTTP_AUTHORIZATION').split(' ')
                 tokenPego = Token.objects.get(key=parteDoToken[1])
                 usuarioDoToken = Conta.objects.get(email=tokenPego.user.email)
-                
+                print(tokenPego.user.email)
                 cotacaoAtual = Cotacao.objects.create(
                     nomeDaCotacao=serializer.validated_data['nomeDaCotacao'],
                     Categoria=serializer.validated_data['Categoria'],
@@ -206,6 +206,7 @@ def criar_cotacao(request):
                     urgencia=serializer.validated_data['urgencia'], 
                     melhorOferta=serializer.validated_data.get('melhorOferta', 'Sem propostas'),
                     status=serializer.validated_data.get('status', 'Aberta'),
+                    temProposta=serializer.validated_data.get('temProposta', False),
                     contaCotacao=usuarioDoToken
                 )
                 
@@ -237,7 +238,7 @@ def listar_cotacoes(request):
         usuarioDoToken = Conta.objects.get(email=tokenPego.user.email)
         conta = Conta.objects.get(id=usuarioDoToken.id)
 
-        cotacoesSerializer = CotacaoSerializer(Cotacao.objects.all().filter(contaCotacao=conta.id), many=True)
+        cotacoesSerializer = CotacaoSerializer2(Cotacao.objects.all().filter(contaCotacao=conta.id), many=True)
         return Response(cotacoesSerializer.data, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'erro': 'Erro ao ver cotações, erro mais detalhado: ' + str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -462,9 +463,9 @@ def criar_proposta(request):
 
         cotacao_id = request.data['cotacao']
         cotacao_obj = get_object_or_404(Cotacao, id=cotacao_id)
-
+        pesosELimitesObjetivos1 = pesosELimitesObjetivos.objects.create(documentoFiscal="Máxima", exigirNotaFiscal=True, melhorPreco="Alta", valorMaximo=None, entregaMaisRapida="Média", entregaAte=None)
         Proposta.objects.create(
-            valorTotal=serializer.validated_data['valorTotal'],
+            valorTotal=Decimal(serializer.validated_data['valorTotal']),
             dataDeEntrega=serializer.validated_data['dataDeEntrega'],
             condicoesEDetalhesDoPagamento=serializer.validated_data[
                 'condicoesEDetalhesDoPagamento'
@@ -476,7 +477,9 @@ def criar_proposta(request):
             emiteDocumentoFiscal=serializer.validated_data[
                 'emiteDocumentoFiscal'
             ],
-            cotacao=cotacao_obj
+            cotacao=cotacao_obj,
+            pesosELimitesObjetivos=pesosELimitesObjetivos1
+            
         )
 
         cotacao_obj.temProposta = True
@@ -499,8 +502,10 @@ def ver_propostas(request):
         parteDoToken = request.META.get('HTTP_AUTHORIZATION').split(' ')
         tokenPego = Token.objects.get(key=parteDoToken[1])
         usuarioDoToken = Conta.objects.get(email=tokenPego.user.email)
-        propostas = Proposta.objects.all().filter(cotacao=Cotacao.objects.get(contaCotacao=usuarioDoToken.id).id)
-        
+        cotacoes = Cotacao.objects.filter(contaCotacao=usuarioDoToken.id)
+
+        propostas = Proposta.objects.filter(cotacao__in=cotacoes)
+
         dados = [
             {
                 'id': proposta.id,
@@ -510,7 +515,8 @@ def ver_propostas(request):
                 'marcaOuFabricante': proposta.marcaOuFabricante,
                 'observacoesComerciais': proposta.observacoesComerciais,
                 'emiteDocumentoFiscal': proposta.emiteDocumentoFiscal,
-                'cotacao': proposta.cotacao.id
+                'cotacao': proposta.cotacao.id,
+                'pesosELimitesObjetivos': proposta.pesosELimitesObjetivos.id
             }
             for proposta in propostas
         ]
@@ -926,4 +932,74 @@ def membros_equipe(request):
         return Response({'membros': 'Todos os membros da equipe: ' + str(dados)}, status=status.HTTP_200_OK)
     except Exception as e: 
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
-        
+
+@api_view(['PUT', 'PATCH'])
+def modificarPesosELimitesObjetivos(request, id):
+    try:
+        objetivo = pesosELimitesObjetivos.objects.get(id=id)
+
+    
+
+        serializer = PesosELimitesObjetivosSerializer(
+            objetivo,
+            data=request.data,
+            partial=True
+        )
+
+        if serializer.is_valid():
+            objetivo = pesosELimitesObjetivos.objects.get(
+                id=id
+            )
+
+            objetivo.documentoFiscal = serializer.validated_data.get(
+                'documentoFiscal', objetivo.documentoFiscal
+            )
+            objetivo.exigirNotaFiscal = serializer.validated_data.get(
+                'exigirNotaFiscal', objetivo.exigirNotaFiscal
+            )
+            objetivo.melhorPreco = serializer.validated_data.get(
+                'melhorPreco', objetivo.melhorPreco
+            )
+            objetivo.valorMaximo = serializer.validated_data.get(
+                'valorMaximo', objetivo.valorMaximo
+            )
+            objetivo.entregaMaisRapida = serializer.validated_data.get(
+                'entregaMaisRapida', objetivo.entregaMaisRapida
+            )
+            objetivo.entregaAte = serializer.validated_data.get(
+                'entregaAte', objetivo.entregaAte
+            )
+
+            objetivo.save()
+
+            return Response({
+                'mensagem': 'Objetivos e limites atualizados com sucesso.'
+            }, status=status.HTTP_200_OK)
+    except pesosELimitesObjetivos.DoesNotExist:
+        return Response(
+            {'erro': 'Objetivos e limites não encontrados.'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e: 
+        return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET'])
+def verPesosELimitesObjetivos(request, id):
+    try:
+        peso = pesosELimitesObjetivos.objects.get(
+                id=id
+            )
+        dados = {
+            'id': peso.id,
+            'documentoFiscal': peso.documentoFiscal, 
+            'exigirNotaFiscal': peso.exigirNotaFiscal,
+            'melhorPreco': peso.melhorPreco,
+            'valorMaximo': peso.valorMaximo,
+            'entregaMaisRapida': peso.entregaMaisRapida,
+            'entregaAte': peso.entregaAte
+        }
+        return Response({
+                'pesosELimitesObjetivos': dados
+        }, status=status.HTTP_200_OK)
+    except Exception as e: 
+            return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
