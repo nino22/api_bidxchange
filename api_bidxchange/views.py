@@ -28,7 +28,7 @@ import json
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([AllowAny]) 
 def criar_conta(request):
     serializer = ContaSerializer(data=request.data)
     if serializer.is_valid():
@@ -126,7 +126,16 @@ def criar_conta(request):
                     conta = Conta.objects.get(email=serializer.validated_data['email'])
                     equipe1 = equipe.objects.create(nomeEquipe=serializer.validated_data.get('nomeFantasia', ''), donoDaEquipe=conta)
                     membro1 = membro.objects.create(membro=serializer.validated_data['nomeCompleto'], email=serializer.validated_data['email'], cargo="Administrador principal", ultimoAcesso=str(timezone.now()), status="Ativo", acoes="Administrador principal")
-  
+                    
+                    context = {'nomeUsuario':conta.nomeCompleto}
+                    html_content = render_to_string('sites/verificandoEmail.html', context)
+                            
+                    text_content = strip_tags(html_content)
+                    msg = EmailMultiAlternatives(f'Confirme seu e-mail | BidXchange', text_content, 'nicolasrenovado12@gmail.com', [request.data['email']])
+                    msg.attach_alternative(html_content, "text/html")
+            
+                    msg.send()    
+                            
                     equipe_membro.objects.create(equipe=equipe1, membro_equipe=membro1)
                     
                     return Response({'mensagem': 'conta criada'}, status=status.HTTP_201_CREATED)
@@ -143,18 +152,21 @@ def login_conta(request):
     usuario = get_user_model()
     try:
         conta = Conta.objects.get(email=request.data['email'], senha=request.data['senha'])
-        usuarioPego = usuario.objects.filter(username=conta.nomeCompleto).first()
-        if (usuarioPego):
-            Token.objects.get(user=usuarioPego).delete()
-            usuarioPego.delete()
-            usuarioFeito = usuario.objects.create_user(username=conta.nomeCompleto, email=conta.email, password=conta.senha)
-            token = Token.objects.create(user=usuarioFeito)
-            return Response({'mensagem': 'Login bem-sucedido, o seu token: ' + str(token.key)}, status=status.HTTP_200_OK)
+        if (conta.emailVerificado == False):
+            return Response({'erro': 'Sua conta não foi verificada. '}, status=status.HTTP_401_UNAUTHORIZED)    
         else:
-            conta = Conta.objects.get(email=request.data['email'], senha=request.data['senha'])
-            usuarioFeito = usuario.objects.create_user(username=conta.nomeCompleto, email=conta.email, password=conta.senha)
-            token = Token.objects.create(user=usuarioFeito)
-            return Response({'mensagem': 'Login bem-sucedido, o seu token: ' + str(token.key)}, status=status.HTTP_200_OK)
+            usuarioPego = usuario.objects.filter(username=conta.nomeCompleto).first()
+            if (usuarioPego):
+                Token.objects.get(user=usuarioPego).delete()
+                usuarioPego.delete()
+                usuarioFeito = usuario.objects.create_user(username=conta.nomeCompleto, email=conta.email, password=conta.senha)
+                token = Token.objects.create(user=usuarioFeito)
+                return Response({'mensagem': 'Login bem-sucedido, o seu token: ' + str(token.key)}, status=status.HTTP_200_OK)
+            else:
+                conta = Conta.objects.get(email=request.data['email'], senha=request.data['senha'])
+                usuarioFeito = usuario.objects.create_user(username=conta.nomeCompleto, email=conta.email, password=conta.senha)
+                token = Token.objects.create(user=usuarioFeito)
+                return Response({'mensagem': 'Login bem-sucedido, o seu token: ' + str(token.key)}, status=status.HTTP_200_OK)
         
     except Exception as e:
         return Response({'erro': 'Credenciais inválidas, erro mais detalhado: ' + str(e)}, status=status.HTTP_401_UNAUTHORIZED)
@@ -1069,3 +1081,19 @@ def lerNotificação(request, id):
             {'erro': 'Erro ao marcar notificação como lida: ' + str(e)},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verificadoEmail(request):
+    try:
+        nomeUsuario = request.POST.get('nomeUsuario')
+        conta = Conta.objects.get(nomeCompleto=nomeUsuario)
+        conta.emailVerificado = True 
+        conta.save()
+        return render(
+            request,
+            'sites/verificadoEmail.html',
+            status=200
+        )
+    except Exception as e: 
+        return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)

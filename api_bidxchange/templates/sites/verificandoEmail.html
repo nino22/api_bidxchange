@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirme que este e-mail é seu.</title>
+</head>
+<body>
+    <h1>Confirme que este e-mail é seu.</h1>
+    <p>Olá, {{ nomeUsuario }}.</p>
+    <p>Sua organização já foi cadastrada. Para proteger a conta e liberar o acesso, confirme este endereço de e-mail.</p>
+
+    <form action="http://127.0.0.1:8000/sites/verificadoEmail/" method="POST">
+        {% csrf_token %}
+
+        <input type="hidden" name="nomeUsuario" value="{{ nomeUsuario }}">
+        <input type="hidden" name="token" value="{{ token }}">
+        <button type="submit">Verificar</button>
+    </form>
+    <p>O link expira em 23 horas, 59 minutos e só pode ser usado uma vez. O botão abre uma página de confirmação antes de ativar a conta.</p>
+    <p>Esta é uma mensagem transacional do BidXchange. Se você não reconhece esta solicitação, ignore o e-mail e não compartilhe o link.</p>
+</body>
+</html>
