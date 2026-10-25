@@ -28,6 +28,9 @@ urlpatterns = [
     path('conta/esqueciSenha/mudarSenha/', views.mudar_senha, name='mudar_senha'), # testado
     path('conta/membrosEquipe/', views.membros_equipe, name='membros_equipe'), # testado
     path('conta/modificarPesosELimitesObjetivos/<int:id>/', views.modificarPesosELimitesObjetivos, name='modificarPesosELimitesObjetivos'), # testado
-    path('conta/verPesosELimitesObjetivos/<int:id>/', views.verPesosELimitesObjetivos, name='verPesosELimitesObjetivos') # testado
+    path('conta/verPesosELimitesObjetivos/<int:id>/', views.verPesosELimitesObjetivos, name='verPesosELimitesObjetivos'), # testado
+    path('conta/verNotificações/', views.verNotificações, name='verNotificações'),
+    path('conta/lerNotificação/<int:id>/', views.lerNotificação, name='lerNotificação')
+
 
 ]

@@ -12,7 +12,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import Avaliacoes, Conta, Cotacao, CotacaoFornecedor, FornecedoresFavoritos, mensagem, Proposta, convites, membro, equipe, equipe_membro, convites, pesosELimitesObjetivos
+from .models import Avaliacoes, Conta, Cotacao, CotacaoFornecedor, FornecedoresFavoritos, mensagem, Proposta, convites, membro, equipe, equipe_membro, convites, notificacoes, pesosELimitesObjetivos
 from .serializers import ContaModificacaoSerializer, ContaSerializer, CotacaoFornecedorSerializer, CotacaoSerializer, CotacaoSerializer2, PesosELimitesObjetivosSerializer, PropostaSerializer, ConviteSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
@@ -143,19 +143,18 @@ def login_conta(request):
     usuario = get_user_model()
     try:
         conta = Conta.objects.get(email=request.data['email'], senha=request.data['senha'])
-        usuarioPego = usuario.objects.get(email=conta.email)
-        Token.objects.get(user=usuarioPego).delete()
-        usuarioPego.delete()
-        usuarioFeito = usuario.objects.create_user(username=conta.nomeCompleto, email=conta.email, password=conta.senha)
-        token = Token.objects.create(user=usuarioFeito)
-        return Response({'mensagem': 'Login bem-sucedido, o seu token: ' + str(token.key)}, status=status.HTTP_200_OK)
-        
-        
-    except usuario.DoesNotExist:
-        conta = Conta.objects.get(email=request.data['email'], senha=request.data['senha'])
-        usuarioFeito = usuario.objects.create_user(username=conta.nomeCompleto, email=conta.email, password=conta.senha)
-        token = Token.objects.create(user=usuarioFeito)
-        return Response({'mensagem': 'Login bem-sucedido, o seu token: ' + str(token.key)}, status=status.HTTP_200_OK)
+        usuarioPego = usuario.objects.filter(username=conta.nomeCompleto).first()
+        if (usuarioPego):
+            Token.objects.get(user=usuarioPego).delete()
+            usuarioPego.delete()
+            usuarioFeito = usuario.objects.create_user(username=conta.nomeCompleto, email=conta.email, password=conta.senha)
+            token = Token.objects.create(user=usuarioFeito)
+            return Response({'mensagem': 'Login bem-sucedido, o seu token: ' + str(token.key)}, status=status.HTTP_200_OK)
+        else:
+            conta = Conta.objects.get(email=request.data['email'], senha=request.data['senha'])
+            usuarioFeito = usuario.objects.create_user(username=conta.nomeCompleto, email=conta.email, password=conta.senha)
+            token = Token.objects.create(user=usuarioFeito)
+            return Response({'mensagem': 'Login bem-sucedido, o seu token: ' + str(token.key)}, status=status.HTTP_200_OK)
         
     except Exception as e:
         return Response({'erro': 'Credenciais inválidas, erro mais detalhado: ' + str(e)}, status=status.HTTP_401_UNAUTHORIZED)
@@ -235,13 +234,30 @@ def listar_cotacoes(request):
     try:
         parteDoToken = request.META.get('HTTP_AUTHORIZATION').split(' ')
         tokenPego = Token.objects.get(key=parteDoToken[1])
-        usuarioDoToken = Conta.objects.get(email=tokenPego.user.email)
-        conta = Conta.objects.get(id=usuarioDoToken.id)
 
-        cotacoesSerializer = CotacaoSerializer2(Cotacao.objects.all().filter(contaCotacao=conta.id), many=True)
-        return Response(cotacoesSerializer.data, status=status.HTTP_200_OK)
+        usuarioDoToken = Conta.objects.get(
+            email=tokenPego.user.email
+        )
+
+        cotacoes = Cotacao.objects.exclude(
+            contaCotacao=usuarioDoToken.id
+        )
+
+        cotacoesSerializer = CotacaoSerializer2(
+            cotacoes,
+            many=True
+        )
+
+        return Response(
+            cotacoesSerializer.data,
+            status=status.HTTP_200_OK
+        )
+
     except Exception as e:
-        return Response({'erro': 'Erro ao ver cotações, erro mais detalhado: ' + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'erro': 'Erro ao ver cotações: ' + str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 @api_view(['DELETE'])
 def encerrar_cotacao(request, id):
@@ -453,6 +469,9 @@ from django.shortcuts import get_object_or_404
 @api_view(['POST'])
 def criar_proposta(request):
     try:
+        parteDoToken = request.META.get('HTTP_AUTHORIZATION').split(' ')
+        tokenPego = Token.objects.get(key=parteDoToken[1])
+        usuarioDoToken = Conta.objects.get(email=tokenPego.user.email)
         serializer = PropostaSerializer(data=request.data)
 
         if not serializer.is_valid():
@@ -481,6 +500,7 @@ def criar_proposta(request):
             pesosELimitesObjetivos=pesosELimitesObjetivos1
             
         )
+        notificacoes.objects.create(conta=cotacao_obj.contaCotacao, titulo="Proposta Recebida", descrição=f"{usuarioDoToken.nomeCompleto} enviou uma oferta para {cotacao_obj.nomeDaCotacao}", lida=False)
 
         cotacao_obj.temProposta = True
         cotacao_obj.save()
@@ -914,7 +934,6 @@ def membros_equipe(request):
         parteDoToken = request.META.get('HTTP_AUTHORIZATION').split(' ')
         tokenPego = Token.objects.get(key=parteDoToken[1])
         usuarioDoToken = Conta.objects.get(email=tokenPego.user.email)
-        membro
         equipe_membros = equipe_membro.objects.all().filter(equipe=equipe.objects.get(donoDaEquipe=Conta.objects.get(email=usuarioDoToken.email)))
         dados = [
             {
@@ -1003,3 +1022,50 @@ def verPesosELimitesObjetivos(request, id):
         }, status=status.HTTP_200_OK)
     except Exception as e: 
             return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+def verNotificações(request):
+    try:
+        parteDoToken = request.META.get('HTTP_AUTHORIZATION').split(' ')
+        tokenPego = Token.objects.get(key=parteDoToken[1])
+        usuarioDoToken = Conta.objects.get(email=tokenPego.user.email)
+        notificacoes1 = notificacoes.objects.filter(conta=Conta.objects.get(id=usuarioDoToken.id))
+        dados = [
+            {
+                'id': notificacao.id,
+                'conta': notificacao.conta.id,
+                'titulo': notificacao.titulo, 
+                'descrição': notificacao.descrição,
+                'lida': notificacao.lida
+            }
+            for notificacao in notificacoes1
+        ]
+                
+        return Response({
+                'notificações': dados
+            }, status=status.HTTP_200_OK) 
+    except Exception as e: 
+        return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['PUT', 'PATCH'])
+def lerNotificação(request, id):
+    try:
+        notificacao = get_object_or_404(
+            notificacoes,
+            id=id
+        )
+
+        notificacao.lida = True
+        notificacao.save(update_fields=['lida'])
+
+        return Response({
+            'mensagem': 'Notificação lida com sucesso',
+            'notificacao_id': notificacao.id,
+            'lida': notificacao.lida
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response(
+            {'erro': 'Erro ao marcar notificação como lida: ' + str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )

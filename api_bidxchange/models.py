@@ -139,6 +139,7 @@ class Proposta(models.Model):
         return f"Condicoes {self.condicoesEDetalhesDoPagamento}"
 
 class notificacoes(models.Model):
+    conta = models.ForeignKey(Conta, on_delete=models.CASCADE, related_name='membro_equipe', null=True)
     titulo = models.CharField(max_length=100) 
     descrição = models.CharField(max_length=100) 
     lida = models.BooleanField()
