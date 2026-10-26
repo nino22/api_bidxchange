@@ -127,7 +127,13 @@ def criar_conta(request):
                     equipe1 = equipe.objects.create(nomeEquipe=serializer.validated_data.get('nomeFantasia', ''), donoDaEquipe=conta)
                     membro1 = membro.objects.create(membro=serializer.validated_data['nomeCompleto'], email=serializer.validated_data['email'], cargo="Administrador principal", ultimoAcesso=str(timezone.now()), status="Ativo", acoes="Administrador principal")
                     
-                    context = {'nomeUsuario':conta.nomeCompleto}
+                    Usuario = get_user_model()
+                    
+                    usuario = Usuario.objects.create_user(username='token24Horas1')
+
+                    token24Horas1 = Token.objects.create(user=usuario)
+                    
+                    context = {'nomeUsuario':conta.nomeCompleto, 'token': token24Horas1}
                     html_content = render_to_string('sites/verificandoEmail.html', context)
                             
                     text_content = strip_tags(html_content)
@@ -680,6 +686,11 @@ def enviar_convite(request):
         tokenPego = Token.objects.get(key=parteDoToken[1])
         usuarioDoToken = Conta.objects.get(email=tokenPego.user.email)
 
+        # Esquema pra gerar um token que terá data pra acabar.
+        Usuario = get_user_model()
+        nomeUsuario = len(str(Usuario.objects.all().last())) + 1
+        usuarioFeito = Usuario.objects.create_user(username=nomeUsuario)
+        tokenFeito = Token.objects.create(user=usuarioFeito)
         if serializer.is_valid():
             membro1 = membro.objects.get(email=serializer.data['email'])
             equipe1 = equipe.objects.get(donoDaEquipe=Conta.objects.get(email=usuarioDoToken.email))
@@ -691,7 +702,7 @@ def enviar_convite(request):
         
     except (equipe_membro.DoesNotExist, membro.DoesNotExist) as e: 
         convites.objects.create(email=request.data['email'], cargo=request.data['cargo'], enviado=timezone.now(), validade=timezone.now()+ timedelta(weeks=1), quemEnviou=usuarioDoToken)
-        context = {'nomeDonoDaEquipe': usuarioDoToken.nomeCompleto, 'equipeNome': equipe.objects.get(donoDaEquipe=usuarioDoToken).nomeEquipe, 'cargo': request.data['cargo'], 'emailDoUsuario': request.data['email'], 'token': tokenPego, 'usuarioDoTokenEmail': usuarioDoToken.email}
+        context = {'nomeDonoDaEquipe': usuarioDoToken.nomeCompleto, 'equipeNome': equipe.objects.get(donoDaEquipe=usuarioDoToken).nomeEquipe, 'cargo': request.data['cargo'], 'emailDoUsuario': request.data['email'], 'token': tokenFeito, 'usuarioDoTokenEmail': usuarioDoToken.email}
         html_content = render_to_string('sites/envioDeConvite.html', context)
                 
         text_content = strip_tags(html_content)
@@ -748,9 +759,19 @@ def verificando_conta(request):
         token2 = request.POST.get('token')
         usuarioDoTokenEmail = request.POST.get('usuarioEmail')
 
+        context = {"mensagem": "O tempo de verificação acabou. "}
         # Validar o token
-        Token.objects.get(key=token2)
+        tokenPego = Token.objects.get(key=token2)
+        
+        tempo_decorrido = timezone.now() - tokenPego.created
 
+        if tempo_decorrido >= timedelta(hours=24):
+            return render(
+                request,
+                'sites/erro.html',
+                status=400,
+                context=context
+            )
         # Buscar a conta convidada
         Conta.objects.get(email=email2)
 
@@ -1087,6 +1108,23 @@ def lerNotificação(request, id):
 def verificadoEmail(request):
     try:
         nomeUsuario = request.POST.get('nomeUsuario')
+        token24horas = request.POST.get('token')
+        token24horasPego = Token.objects.get(key=token24horas)
+        Token.objects.get(key=token24horas)
+
+        tempo_decorrido = timezone.now() - token24horasPego.created
+
+
+        context = {'mensagem': 'O tempo da verificação acabou. '}
+        
+        if tempo_decorrido >= timedelta(hours=24):
+            return render(
+                request,
+                'sites/erro.html',
+                status=400,
+                context=context
+            )
+        
         conta = Conta.objects.get(nomeCompleto=nomeUsuario)
         conta.emailVerificado = True 
         conta.save()
