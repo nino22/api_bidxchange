@@ -1,11 +1,230 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Erro</title>
+    <title>Erro | BidXChange</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #0d0f11;
+            color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: #181c1f;
+            border: 1px solid #343b42;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 26px;
+            border-bottom: 1px solid #343b42;
+        }
+
+        .logo {
+            font-family: Georgia, serif;
+            font-size: 23px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .slogan {
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: #b9c8e4;
+        }
+
+        .content {
+            padding: 38px 26px;
+        }
+
+        .categoria {
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #f18b8b;
+            margin-bottom: 20px;
+        }
+
+        .icone {
+            width: 54px;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #42252b;
+            border: 1px solid #88424c;
+            color: #ff9a9a;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-family: Georgia, serif;
+            font-size: 29px;
+            line-height: 1.25;
+            font-weight: bold;
+            margin-bottom: 18px;
+        }
+
+        p {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #d2d7df;
+            margin-bottom: 18px;
+        }
+
+        .mensagem-erro {
+            padding: 16px;
+            background-color: #352125;
+            border-left: 3px solid #d65b68;
+            color: #ffb4ba;
+            font-size: 13px;
+            line-height: 1.7;
+            margin-bottom: 24px;
+            overflow-wrap: anywhere;
+        }
+
+        .botao {
+            display: inline-block;
+            padding: 15px 22px;
+            background-color: #365fa8;
+            border: 1px solid #4777c7;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .botao:hover {
+            background-color: #4777c7;
+        }
+
+        .linha {
+            height: 1px;
+            background-color: #343b42;
+            margin: 26px 0 18px;
+        }
+
+        .observacao {
+            font-size: 11px;
+            color: #a8b3c0;
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        .footer {
+            padding: 22px 26px;
+            border-top: 1px solid #343b42;
+            font-size: 11px;
+            line-height: 1.7;
+            color: #9daab8;
+        }
+
+        @media (max-width: 500px) {
+            .header {
+                padding: 20px;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 25px;
+            }
+
+            .slogan {
+                font-size: 8px;
+            }
+
+            .botao {
+                display: block;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    {{ mensagem }}
+    <div class="container">
+
+        <header class="header">
+            <div class="logo">BidXChange</div>
+            <div class="slogan">DECISÕES MELHORES</div>
+        </header>
+
+        <main class="content">
+
+            <div class="categoria">
+                SISTEMA · NOTIFICAÇÃO DE ERRO
+            </div>
+
+            <div class="icone">!</div>
+
+            <h1>Não foi possível concluir a operação.</h1>
+
+            <p>
+                Ocorreu um problema durante o
+                processamento da sua solicitação
+                na plataforma <strong>BidXChange</strong>.
+            </p>
+
+            <div class="mensagem-erro" role="alert">
+                {% if mensagem %}
+                    {{ mensagem }}
+                {% else %}
+                    Ocorreu um erro inesperado.
+                    Tente novamente mais tarde.
+                {% endif %}
+            </div>
+
+            <p>
+                Verifique as informações fornecidas
+                e tente realizar a operação novamente.
+            </p>
+
+            <a href="/" class="botao">
+                Voltar ao início &rarr;
+            </a>
+
+            <div class="linha"></div>
+
+            <p class="observacao">
+                Se o problema persistir, entre em
+                contato com o suporte do BidXChange
+                para receber assistência.
+            </p>
+
+        </main>
+
+        <footer class="footer">
+            BidXChange · Segurança e confiabilidade.
+            Estamos trabalhando para oferecer
+            uma experiência segura e estável.
+        </footer>
+
+    </div>
 </body>
 </html>

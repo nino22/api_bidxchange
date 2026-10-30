@@ -1,15 +1,192 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Convite Aceito | BidXchange</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background-color: #0d0f11;
+            color: #f5f5f5;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .pagina {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 16px;
+        }
+
+        .cartao {
+            width: 100%;
+            max-width: 496px;
+            background-color: #181b1e;
+            border: 1px solid #34383d;
+        }
+
+        .cabecalho {
+            min-height: 68px;
+            padding: 20px 26px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px solid #34383d;
+        }
+
+        .logo {
+            color: #ffffff;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 23px;
+            font-weight: bold;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: #4385ff;
+        }
+
+        .slogan {
+            color: #75a5ff;
+            font-size: 8px;
+            letter-spacing: 1.4px;
+            white-space: nowrap;
+        }
+
+        .conteudo {
+            padding: 34px 26px 36px;
+        }
+
+        .etiqueta {
+            margin: 0 0 16px;
+            color: #75a5ff;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 1.8px;
+            line-height: 1.6;
+        }
+
+        h1 {
+            margin: 0 0 18px;
+            color: #ffffff;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 30px;
+            font-weight: normal;
+            line-height: 1.25;
+        }
+
+        .mensagem {
+            margin: 0;
+            color: #dfe2e6;
+            font-size: 13px;
+            line-height: 1.9;
+            overflow-wrap: anywhere;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            margin-top: 25px;
+            padding: 11px 14px;
+            border: 1px solid #34383d;
+            color: #cbd7e9;
+            font-size: 12px;
+        }
+
+        .indicador {
+            width: 8px;
+            height: 8px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background-color: #75a5ff;
+        }
+
+        .rodape {
+            padding: 20px 26px;
+            border-top: 1px solid #34383d;
+            background-color: #151719;
+            color: #aeb5bf;
+            font-size: 10px;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 520px) {
+            .cabecalho {
+                padding: 18px 20px;
+                flex-wrap: wrap;
+            }
+
+            .conteudo {
+                padding: 28px 20px 30px;
+            }
+
+            .rodape {
+                padding: 18px 20px;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+
+            .logo {
+                font-size: 21px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    {% if mensagem %}
-        {{ mensagem }}
-    {% else %}
-        <h1>Convite Aceito</h1>
-    {% endif %}
+    <main class="pagina">
+        <section class="cartao">
+
+            <header class="cabecalho">
+                <div class="logo">Bid<span>X</span>change</div>
+                <div class="slogan">DECISÕES MELHORES</div>
+            </header>
+
+            <div class="conteudo">
+                {% if mensagem %}
+                    <p class="etiqueta">EQUIPE · ACESSO</p>
+
+                    <h1>Não foi possível concluir.</h1>
+
+                    <p class="mensagem">{{ mensagem }}</p>
+                {% else %}
+                    <p class="etiqueta">
+                        EQUIPE · ACESSO CONFIRMADO
+                    </p>
+
+                    <h1>Convite Aceito</h1>
+
+                    <p class="mensagem">
+                        Sua participação na equipe foi confirmada.
+                        Você já pode continuar utilizando o BidXchange.
+                    </p>
+
+                    <div class="status">
+                        <span class="indicador"></span>
+                        Acesso confirmado
+                    </div>
+                {% endif %}
+            </div>
+
+            <footer class="rodape">
+                Esta é uma página do BidXchange. Proteja seus dados
+                e não compartilhe seus links de acesso.
+            </footer>
+
+        </section>
+    </main>
 </body>
 </html>

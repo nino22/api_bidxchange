@@ -1,59 +1,516 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Criar Conta | BidXChange</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #0d0f11;
+            color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 35px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 620px;
+            background-color: #181c1f;
+            border: 1px solid #343b42;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 26px 30px;
+            border-bottom: 1px solid #343b42;
+        }
+
+        .logo {
+            font-family: Georgia, serif;
+            font-size: 23px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .slogan {
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: #b9c8e4;
+        }
+
+        .content {
+            padding: 38px 30px;
+        }
+
+        .categoria {
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #80aaff;
+            margin-bottom: 20px;
+        }
+
+        .icone {
+            width: 54px;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #243c61;
+            border: 1px solid #4269a7;
+            color: #9cc0ff;
+            font-size: 25px;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-family: Georgia, serif;
+            font-size: 30px;
+            line-height: 1.25;
+            margin-bottom: 14px;
+        }
+
+        .descricao {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #b9c3cf;
+            margin-bottom: 30px;
+        }
+
+        .secao-titulo {
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            color: #80aaff;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #343b42;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0 20px;
+        }
+
+        .campo {
+            margin-bottom: 22px;
+            min-width: 0;
+        }
+
+        .campo-completo {
+            grid-column: 1 / -1;
+        }
+
+        .campo label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            color: #e4e8ef;
+            margin-bottom: 10px;
+        }
+
+        .obrigatorio {
+            color: #80aaff;
+        }
+
+        .campo input {
+            width: 100%;
+            padding: 14px 15px;
+            background-color: #111518;
+            border: 1px solid #3a434d;
+            color: #ffffff;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .campo input:focus {
+            border-color: #648fe0;
+        }
+
+        .campo input::placeholder {
+            color: #778391;
+        }
+
+        .ajuda {
+            font-size: 11px;
+            color: #9daab8;
+            margin-top: 8px;
+            line-height: 1.6;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background-color: #111518;
+            border: 1px solid #343b42;
+            padding: 18px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .checkbox-container input {
+            width: 16px;
+            height: 16px;
+            margin-top: 2px;
+            accent-color: #4777c7;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .checkbox-texto {
+            font-size: 13px;
+            color: #e4e8ef;
+            line-height: 1.6;
+        }
+
+        .checkbox-descricao {
+            display: block;
+            font-size: 11px;
+            color: #9daab8;
+            margin-top: 5px;
+        }
+
+        .botao {
+            display: block;
+            width: 100%;
+            padding: 16px 22px;
+            background-color: #365fa8;
+            border: 1px solid #4777c7;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 28px;
+        }
+
+        .botao:hover {
+            background-color: #4777c7;
+        }
+
+        .mensagem {
+            margin-top: 22px;
+            padding: 15px;
+            background-color: #23354f;
+            border-left: 3px solid #648fe0;
+            color: #c5d9ff;
+            font-size: 12px;
+            line-height: 1.7;
+            overflow-wrap: anywhere;
+        }
+
+        .linha {
+            height: 1px;
+            background-color: #343b42;
+            margin: 28px 0 18px;
+        }
+
+        .observacao {
+            font-size: 11px;
+            color: #a8b3c0;
+            line-height: 1.7;
+        }
+
+        .footer {
+            padding: 22px 30px;
+            border-top: 1px solid #343b42;
+            font-size: 11px;
+            line-height: 1.7;
+            color: #9daab8;
+        }
+
+        @media (max-width: 600px) {
+            .header {
+                padding: 22px 20px;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .campo-completo {
+                grid-column: auto;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+
+            .slogan {
+                font-size: 8px;
+            }
+
+            .footer {
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <form action="" method="post">
-        {% csrf_token %}
+    <div class="container">
 
-        <label for="nomeCompleto">Nome completo:</label>
-        <input type="text" id="nomeCompleto" name="nomeCompleto" maxlength="100" required>
-        <br><br>
+        <header class="header">
+            <div class="logo">BidXChange</div>
+            <div class="slogan">DECISÕES MELHORES</div>
+        </header>
 
-        <label for="email">E-mail:</label>
-        <input type="email" id="email" name="email" maxlength="100" value="{{ email }}" required>
-        <br><br>
+        <main class="content">
 
-        <label for="razaoSocial">Razão social:</label>
-        <input type="text" id="razaoSocial" name="razaoSocial" maxlength="100" required>
-        <br><br>
+            <div class="categoria">
+                CONTA · CADASTRO DE ORGANIZAÇÃO
+            </div>
 
-        <label for="nomeFantasia">Nome fantasia:</label>
-        <input type="text" id="nomeFantasia" name="nomeFantasia" maxlength="100">
-        <br><br>
+            <div class="icone">&#128188;</div>
 
-        <label for="cnpj">CNPJ:</label>
-        <input type="text" id="cnpj" name="cnpj" maxlength="20" required>
-        <br><br>
+            <h1>Crie sua conta.</h1>
 
-        <label for="telefone">Telefone:</label>
-        <input type="tel" id="telefone" name="telefone" required>
-        <br><br>
+            <p class="descricao">
+                Preencha os dados abaixo para cadastrar
+                sua organização e começar a utilizar
+                os recursos do BidXChange.
+            </p>
 
-        <label for="endereco">Endereço:</label>
-        <input type="text" id="endereco" name="endereco" maxlength="100" required>
-        <br><br>
+            <form action="" method="POST">
+                {% csrf_token %}
 
-        <label for="senha">Senha:</label>
-        <input type="password" id="senha" name="senha" required>
-        <br><br>
+                <div class="secao-titulo">
+                    01 · DADOS DO RESPONSÁVEL
+                </div>
 
-        <label for="eumainstuicaodeensino">
-            <input
-                type="checkbox"
-                id="eumainstuicaodeensino"
-                name="eumainstuicaodeensino"
-                value="true"
-            >
-            Sou uma instituição de ensino
-        </label>
-        <br><br>
-        
-        {{ resultado }} <br> <br>
-        <button type="submit">Enviar</button>
-    </form>
+                <div class="form-grid">
+
+                    <div class="campo campo-completo">
+                        <label for="nomeCompleto">
+                            Nome completo
+                            <span class="obrigatorio">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            id="nomeCompleto"
+                            name="nomeCompleto"
+                            maxlength="100"
+                            placeholder="Digite seu nome completo"
+                            autocomplete="name"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo campo-completo">
+                        <label for="email">
+                            E-mail
+                            <span class="obrigatorio">*</span>
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            maxlength="100"
+                            value="{{ email }}"
+                            placeholder="exemplo@empresa.com"
+                            autocomplete="email"
+                            required
+                        >
+                    </div>
+
+                </div>
+
+                <div class="secao-titulo">
+                    02 · DADOS DA ORGANIZAÇÃO
+                </div>
+
+                <div class="form-grid">
+
+                    <div class="campo campo-completo">
+                        <label for="razaoSocial">
+                            Razão social
+                            <span class="obrigatorio">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            id="razaoSocial"
+                            name="razaoSocial"
+                            maxlength="100"
+                            placeholder="Razão social da organização"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo">
+                        <label for="nomeFantasia">
+                            Nome fantasia
+                        </label>
+
+                        <input
+                            type="text"
+                            id="nomeFantasia"
+                            name="nomeFantasia"
+                            maxlength="100"
+                            placeholder="Nome comercial"
+                        >
+
+                        <div class="ajuda">
+                            Campo opcional.
+                        </div>
+                    </div>
+
+                    <div class="campo">
+                        <label for="cnpj">
+                            CNPJ
+                            <span class="obrigatorio">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            id="cnpj"
+                            name="cnpj"
+                            maxlength="20"
+                            placeholder="00.000.000/0000-00"
+                            inputmode="numeric"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo">
+                        <label for="telefone">
+                            Telefone
+                            <span class="obrigatorio">*</span>
+                        </label>
+
+                        <input
+                            type="tel"
+                            id="telefone"
+                            name="telefone"
+                            placeholder="(00) 00000-0000"
+                            autocomplete="tel"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo">
+                        <label for="endereco">
+                            Endereço
+                            <span class="obrigatorio">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            id="endereco"
+                            name="endereco"
+                            maxlength="100"
+                            placeholder="Endereço da organização"
+                            autocomplete="street-address"
+                            required
+                        >
+                    </div>
+
+                </div>
+
+                <div class="secao-titulo">
+                    03 · SEGURANÇA DA CONTA
+                </div>
+
+                <div class="campo">
+                    <label for="senha">
+                        Senha de acesso
+                        <span class="obrigatorio">*</span>
+                    </label>
+
+                    <input
+                        type="password"
+                        id="senha"
+                        name="senha"
+                        placeholder="Crie uma senha segura"
+                        autocomplete="new-password"
+                        minlength="8"
+                        required
+                    >
+
+                    <div class="ajuda">
+                        Utilize pelo menos 8 caracteres.
+                        Prefira uma combinação de letras,
+                        números e símbolos.
+                    </div>
+                </div>
+
+                <div class="secao-titulo">
+                    04 · TIPO DE ORGANIZAÇÃO
+                </div>
+
+                <label
+                    class="checkbox-container"
+                    for="eumainstuicaodeensino"
+                >
+                    <input
+                        type="checkbox"
+                        id="eumainstuicaodeensino"
+                        name="eumainstuicaodeensino"
+                        value="true"
+                    >
+
+                    <span class="checkbox-texto">
+                        Sou uma instituição de ensino
+
+                        <span class="checkbox-descricao">
+                            Marque esta opção caso sua
+                            organização seja uma instituição
+                            de ensino.
+                        </span>
+                    </span>
+                </label>
+
+                {% if resultado %}
+                    <div class="mensagem" role="status">
+                        {{ resultado }}
+                    </div>
+                {% endif %}
+
+                <button type="submit" class="botao">
+                    Criar minha conta &rarr;
+                </button>
+
+            </form>
+
+            <div class="linha"></div>
+
+            <p class="observacao">
+                Ao realizar o cadastro, seus dados serão
+                utilizados para identificar sua organização
+                e permitir o acesso aos recursos da plataforma.
+            </p>
+
+        </main>
+
+        <footer class="footer">
+            BidXChange · Cadastro de organização.
+            Seus dados devem ser fornecidos de forma
+            correta para garantir a segurança da conta.
+        </footer>
+
+    </div>
 </body>
 </html>

@@ -1,0 +1,379 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alterar Senha | BidXChange</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #0d0f11;
+            color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: #181c1f;
+            border: 1px solid #343b42;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 26px;
+            border-bottom: 1px solid #343b42;
+        }
+
+        .logo {
+            font-family: Georgia, serif;
+            font-size: 23px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .slogan {
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: #b9c8e4;
+        }
+
+        .content {
+            padding: 38px 26px;
+        }
+
+        .categoria {
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #80aaff;
+            margin-bottom: 20px;
+        }
+
+        .icone {
+            width: 54px;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #243c61;
+            border: 1px solid #4269a7;
+            color: #9cc0ff;
+            font-size: 26px;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-family: Georgia, serif;
+            font-size: 29px;
+            line-height: 1.25;
+            font-weight: bold;
+            margin-bottom: 18px;
+        }
+
+        p {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #d2d7df;
+            margin-bottom: 24px;
+        }
+
+        .destaque {
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .campo {
+            margin-bottom: 22px;
+        }
+
+        .campo label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            color: #e4e8ef;
+            margin-bottom: 10px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .campo input {
+            width: 100%;
+            padding: 15px 48px 15px 15px;
+            background-color: #111518;
+            border: 1px solid #3a434d;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .campo input:focus {
+            border-color: #648fe0;
+        }
+
+        .campo input::placeholder {
+            color: #778391;
+        }
+
+        .mostrar-senha {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: #9aacc6;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .mostrar-senha:hover {
+            color: #ffffff;
+        }
+
+        .ajuda {
+            font-size: 11px;
+            color: #9daab8;
+            margin-top: 8px;
+            line-height: 1.6;
+        }
+
+        .botao {
+            display: block;
+            width: 100%;
+            padding: 16px 22px;
+            background-color: #365fa8;
+            border: 1px solid #4777c7;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 28px;
+        }
+
+        .botao:hover {
+            background-color: #4777c7;
+        }
+
+        .mensagem {
+            margin-top: 20px;
+            padding: 14px;
+            background-color: #23354f;
+            border-left: 3px solid #648fe0;
+            color: #c5d9ff;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .linha {
+            height: 1px;
+            background-color: #343b42;
+            margin: 26px 0 18px;
+        }
+
+        .observacao {
+            font-size: 11px;
+            color: #a8b3c0;
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        .footer {
+            padding: 22px 26px;
+            border-top: 1px solid #343b42;
+            font-size: 11px;
+            line-height: 1.7;
+            color: #9daab8;
+        }
+
+        @media (max-width: 500px) {
+            .header {
+                padding: 20px;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 25px;
+            }
+
+            .slogan {
+                font-size: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <header class="header">
+            <div class="logo">BidXChange</div>
+            <div class="slogan">DECISÕES MELHORES</div>
+        </header>
+
+        <main class="content">
+
+            <div class="categoria">
+                CONTA · REDEFINIÇÃO DE SENHA
+            </div>
+
+            <div class="icone">&#128274;</div>
+
+            <h1>Crie sua nova senha.</h1>
+
+            <p>
+                Olá,
+                <span class="destaque">{{ nomeUsuario }}</span>.
+                Defina uma nova senha para continuar
+                acessando sua conta no BidXChange.
+            </p>
+
+            <form action="" method="POST" id="formSenha">
+                {% csrf_token %}
+
+                <input
+                    type="hidden"
+                    name="formulario"
+                    value="formCadastro"
+                >
+
+                <input
+                    type="hidden"
+                    id="nomeUsuario"
+                    name="nomeUsuario"
+                    value="{{ nomeUsuario }}"
+                >
+
+                <div class="campo">
+                    <label for="senha">Nova senha</label>
+
+                    <div class="input-wrapper">
+                        <input
+                            type="password"
+                            id="senha"
+                            name="senha"
+                            placeholder="Digite sua nova senha"
+                            autocomplete="new-password"
+                            minlength="8"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            class="mostrar-senha"
+                            onclick="alternarSenha('senha', this)"
+                        >
+                            Mostrar
+                        </button>
+                    </div>
+
+                    <div class="ajuda">
+                        Utilize pelo menos 8 caracteres.
+                    </div>
+                </div>
+
+                <div class="campo">
+                    <label for="senhaRepetida">
+                        Confirme sua nova senha
+                    </label>
+
+                    <div class="input-wrapper">
+                        <input
+                            type="password"
+                            id="senhaRepetida"
+                            name="senhaRepetida"
+                            placeholder="Repita sua nova senha"
+                            autocomplete="new-password"
+                            minlength="8"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            class="mostrar-senha"
+                            onclick="alternarSenha('senhaRepetida', this)"
+                        >
+                            Mostrar
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="botao">
+                    Alterar minha senha &rarr;
+                </button>
+
+                {% if mensagem %}
+                    <div class="mensagem">
+                        {{ mensagem }}
+                    </div>
+                {% endif %}
+
+            </form>
+
+            <div class="linha"></div>
+
+            <p class="observacao">
+                Por segurança, escolha uma senha
+                diferente das utilizadas anteriormente.
+                Não compartilhe suas credenciais.
+            </p>
+
+        </main>
+
+        <footer class="footer">
+            BidXChange · Segurança da conta.
+            Sua nova senha será utilizada nos
+            próximos acessos à plataforma.
+        </footer>
+
+    </div>
+
+    <script>
+        function alternarSenha(id, botao) {
+            const campo = document.getElementById(id);
+
+            if (campo.type === "password") {
+                campo.type = "text";
+                botao.textContent = "Ocultar";
+            } else {
+                campo.type = "password";
+                botao.textContent = "Mostrar";
+            }
+        }
+
+        document.getElementById("formSenha")
+            .addEventListener("submit", function(event) {
+
+                const senha = document.getElementById("senha").value;
+                const repetida = document.getElementById("senhaRepetida").value;
+
+                if (senha !== repetida) {
+                    event.preventDefault();
+                    alert("As senhas não coincidem.");
+                }
+            });
+    </script>
+
+</body>
+</html>

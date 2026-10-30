@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 import random
 import token
+import uuid
 
 from django.shortcuts import redirect, render
 from django.http import HttpResponse, JsonResponse, request
@@ -128,12 +129,11 @@ def criar_conta(request):
                     membro1 = membro.objects.create(membro=serializer.validated_data['nomeCompleto'], email=serializer.validated_data['email'], cargo="Administrador principal", ultimoAcesso=str(timezone.now()), status="Ativo", acoes="Administrador principal")
                     
                     Usuario = get_user_model()
+                    nomeUsuario = f"token_{uuid.uuid4().hex}"
+                    usuarioFeito = Usuario.objects.create(username=nomeUsuario)
+                    tokenFeito = Token.objects.create(user=usuarioFeito)
                     
-                    usuario = Usuario.objects.create_user(username='token24Horas1')
-
-                    token24Horas1 = Token.objects.create(user=usuario)
-                    
-                    context = {'nomeUsuario':conta.nomeCompleto, 'token': token24Horas1}
+                    context = {'nomeUsuario':conta.nomeCompleto, 'token': tokenFeito}
                     html_content = render_to_string('sites/verificandoEmail.html', context)
                             
                     text_content = strip_tags(html_content)
@@ -172,8 +172,7 @@ def login_conta(request):
                 conta = Conta.objects.get(email=request.data['email'], senha=request.data['senha'])
                 usuarioFeito = usuario.objects.create_user(username=conta.nomeCompleto, email=conta.email, password=conta.senha)
                 token = Token.objects.create(user=usuarioFeito)
-                return Response({'mensagem': 'Login bem-sucedido, o seu token: ' + str(token.key)}, status=status.HTTP_200_OK)
-        
+                return Response({'mensagem': 'Login bem-sucedido, o seu token: ' + str(token.key)}, status=status.HTTP_200_OK)    
     except Exception as e:
         return Response({'erro': 'Credenciais inválidas, erro mais detalhado: ' + str(e)}, status=status.HTTP_401_UNAUTHORIZED)
     
@@ -625,20 +624,25 @@ def enviar_email_senha(request):
         codigoDeVerificacao = str(digito1) + '' + str(digito2) + '' + str(digito3)
         email = request.data['email']
         usuario = Conta.objects.get(email=email)
+
+        Usuario = get_user_model()
+        nomeUsuario = f"token_{uuid.uuid4().hex}"
+        usuarioFeito = Usuario.objects.create(username=nomeUsuario)
+        tokenFeito = Token.objects.create(user=usuarioFeito)
         
-        usuario.codigoDeVerificacao = Decimal(codigoDeVerificacao)
-        
-        usuario.save()   
+        request.session['nomeUsuario'] = usuario.nomeCompleto
+        request.session['token'] = tokenFeito.key
+
+        context = {"nomeUsuario": usuario.nomeCompleto, "token": tokenFeito.key}
+
+        html_content = render_to_string('sites/recuperandoSenha.html', context)
                 
-        send_mail(
-            subject=f'Código de verificação - BidXChange',
-            message=f'Código de verificação: {codigoDeVerificacao}',
-            from_email='nicolasrenovado12@gmail.com',
-            recipient_list=['nicolasrenovado12@gmail.com'],
-            fail_silently=False,
-        )
-        
-        
+        text_content = strip_tags(html_content)
+        msg = EmailMultiAlternatives(f'Redefina sua senha | BidXchange', text_content, 'nicolasrenovado12@gmail.com', [request.data['email']])
+        msg.attach_alternative(html_content, "text/html")
+
+        msg.send()    
+                
         return Response(
             {'mensagem': 'Email enviado'},
             status=status.HTTP_200_OK
@@ -688,9 +692,10 @@ def enviar_convite(request):
 
         # Esquema pra gerar um token que terá data pra acabar.
         Usuario = get_user_model()
-        nomeUsuario = len(str(Usuario.objects.all().last())) + 1
-        usuarioFeito = Usuario.objects.create_user(username=nomeUsuario)
+        nomeUsuario = f"token_{uuid.uuid4().hex}"
+        usuarioFeito = Usuario.objects.create(username=nomeUsuario)
         tokenFeito = Token.objects.create(user=usuarioFeito)
+        
         if serializer.is_valid():
             membro1 = membro.objects.get(email=serializer.data['email'])
             equipe1 = equipe.objects.get(donoDaEquipe=Conta.objects.get(email=usuarioDoToken.email))
@@ -701,7 +706,7 @@ def enviar_convite(request):
             return Response({'mensagem': "Json invalido"}, status=status.HTTP_400_BAD_REQUEST)
         
     except (equipe_membro.DoesNotExist, membro.DoesNotExist) as e: 
-        convites.objects.create(email=request.data['email'], cargo=request.data['cargo'], enviado=timezone.now(), validade=timezone.now()+ timedelta(weeks=1), quemEnviou=usuarioDoToken)
+        convites.objects.create(email=request.data['email'], cargo=request.data['cargo'], enviado=timezone.now(), validade=timezone.now() + timedelta(weeks=1), quemEnviou=usuarioDoToken)
         context = {'nomeDonoDaEquipe': usuarioDoToken.nomeCompleto, 'equipeNome': equipe.objects.get(donoDaEquipe=usuarioDoToken).nomeEquipe, 'cargo': request.data['cargo'], 'emailDoUsuario': request.data['email'], 'token': tokenFeito, 'usuarioDoTokenEmail': usuarioDoToken.email}
         html_content = render_to_string('sites/envioDeConvite.html', context)
                 
@@ -765,7 +770,7 @@ def verificando_conta(request):
         
         tempo_decorrido = timezone.now() - tokenPego.created
 
-        if tempo_decorrido >= timedelta(hours=24):
+        if tempo_decorrido >= timedelta(hours=168):
             return render(
                 request,
                 'sites/erro.html',
@@ -910,7 +915,27 @@ def criarConta(request):
                 resultado = resposta.json()
                 primeiraChave = next(iter(resultado))
                 primeiraMensagem = resultado[primeiraChave]
-                resultado = primeiraMensagem
+                resultado = primeiraMensagem[0]
+            
+
+                context = {
+                    'email': email3,
+                    'respostaStatusCode': resposta.status_code,
+                    'resultado': resultado
+                }
+
+                # Limpa a sessão apenas após cadastro bem-sucedido
+                if resposta.status_code in (200, 201):
+                    request.session.pop('email', None)
+                    request.session.pop('token', None)
+                    
+                equipe_membro.objects.create(equipe=equipe.objects.get(donoDaEquipe=Conta.objects.get(email=usuarioDoTokenEmail)), membro_equipe=membro.objects.get(email=email))
+
+                return render(
+                    request,
+                    'sites/criarConta.html',
+                    context
+                )
             else:
                 resultado = {
                     'erro': 'A API não retornou JSON.',
@@ -919,25 +944,6 @@ def criarConta(request):
                         'utf-8', errors='replace'
                     )[:1000]
                 }
-
-            context = {
-                'email': email3,
-                'respostaStatusCode': resposta.status_code,
-                'resultado': resultado
-            }
-
-            # Limpa a sessão apenas após cadastro bem-sucedido
-            if resposta.status_code in (200, 201):
-                request.session.pop('email', None)
-                request.session.pop('token', None)
-                
-            equipe_membro.objects.create(equipe=equipe.objects.get(donoDaEquipe=Conta.objects.get(email=usuarioDoTokenEmail)), membro_equipe=membro.objects.get(email=email3))
-
-            return render(
-                request,
-                'sites/criarConta.html',
-                context
-            )
 
         return render(
             request,
@@ -1135,3 +1141,124 @@ def verificadoEmail(request):
         )
     except Exception as e: 
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def mudandoSenha(request):
+    try:
+        if request.method == "POST" and request.POST.get("formulario") != "formCadastro":
+            nomeUsuario = request.POST.get("nomeUsuario")
+            token = request.POST.get("token")
+            request.session['token'] = token
+            request.session['nomeUsuario'] = nomeUsuario
+            context = {"nomeUsuario": nomeUsuario}
+
+            if not token:
+                return render(
+                    request,
+                    'sites/erro.html',
+                    {'mensagem': 'Token não encontrado na sessão.'},
+                    status=403
+                )
+
+            token = Token.objects.get(key=token)
+
+            return render(
+                request,
+                'sites/mudandoSenha.html',
+                context=context,
+                status=200
+            )
+        elif request.method == "POST" and request.POST.get("formulario") == "formCadastro":
+            nomeUsuario = request.session.get("nomeUsuario")
+            token = request.session.get("token")
+            senha = request.POST.get("senha")
+            senhaRepetida = request.POST.get("senhaRepetida")
+
+
+            if (senhaRepetida != senha):
+
+                return render(
+                    request,
+                    'sites/mudandoSenha.html',
+                    {'mensagem': 'As senhas não coicidem. '}
+                )
+                
+            else: 
+                print(nomeUsuario)
+                conta = Conta.objects.get(nomeCompleto=str(nomeUsuario))
+                conta.senha = senha
+                conta.save()
+
+                token = Token.objects.get(key=token)
+                token.delete()
+                
+                return render(
+                    request,
+                    'sites/senhaAlterada.html',
+                    status=200
+                )
+            
+        
+    
+    except Token.DoesNotExist:
+        return render(request, 'sites/erro.html', {
+            'mensagem': 'Token inválido ou já utilizado.'
+        }, status=403)
+    
+    except Exception as e: 
+        return render(
+            request,
+            'sites/mudandoSenha.html',
+            {"erro": "Erro, erro mais detalhado: " + str(e)},
+            status=400
+        )    
+        
+@api_view(['GET'])
+def ver_equipes(request):
+    try:
+        parteDoToken = request.META.get('HTTP_AUTHORIZATION', '').split()
+
+        if len(parteDoToken) != 2 or parteDoToken[0].lower() != 'token':
+            return Response(
+                {'erro': 'Token ausente ou inválido'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        tokenPego = Token.objects.get(key=parteDoToken[1])
+        usuarioDoToken = Conta.objects.get(email=tokenPego.user.email)
+
+        membros = membro.objects.filter(email=usuarioDoToken.email)
+
+        equipesMembro = equipe_membro.objects.filter(
+            membro_equipe_id__in=membros.values_list('id', flat=True)
+        ).select_related('equipe')
+
+        dados = [
+            {
+                "nomeEquipe": relacao.equipe.nomeEquipe
+            }
+            for relacao in equipesMembro
+        ]
+
+        return Response({
+            'equipes': dados
+        }, status=status.HTTP_200_OK)
+
+    except Token.DoesNotExist:
+        return Response(
+            {'erro': 'Token inválido'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    except Conta.DoesNotExist:
+        return Response(
+            {'erro': 'Conta não encontrada'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    except Exception as e:
+        return Response(
+            {'erro': 'Erro detalhado: ' + str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

@@ -1,31 +1,358 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Convite para Equipe | BidXChange</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #0d0f11;
+            color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: #181c1f;
+            border: 1px solid #343b42;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 26px;
+            border-bottom: 1px solid #343b42;
+        }
+
+        .logo {
+            font-family: Georgia, serif;
+            font-size: 23px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .slogan {
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: #b9c8e4;
+        }
+
+        .content {
+            padding: 38px 26px;
+        }
+
+        .categoria {
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #80aaff;
+            margin-bottom: 20px;
+        }
+
+        .icone {
+            width: 54px;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #243c61;
+            border: 1px solid #4269a7;
+            color: #9cc0ff;
+            font-size: 25px;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-family: Georgia, serif;
+            font-size: 29px;
+            line-height: 1.25;
+            font-weight: bold;
+            margin-bottom: 18px;
+        }
+
+        p {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #d2d7df;
+            margin-bottom: 18px;
+        }
+
+        .destaque {
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .equipe-card {
+            background-color: #111518;
+            border: 1px solid #343b42;
+            padding: 22px;
+            margin: 26px 0;
+        }
+
+        .equipe-titulo {
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            color: #80aaff;
+            margin-bottom: 12px;
+        }
+
+        .equipe-nome {
+            font-family: Georgia, serif;
+            font-size: 21px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 18px;
+            overflow-wrap: anywhere;
+        }
+
+        .detalhe {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 0;
+            border-top: 1px solid #343b42;
+            font-size: 12px;
+        }
+
+        .detalhe-label {
+            color: #9daab8;
+        }
+
+        .detalhe-valor {
+            color: #e4e8ef;
+            font-weight: bold;
+            text-align: right;
+            overflow-wrap: anywhere;
+        }
+
+        .cargo {
+            display: inline-block;
+            background-color: #23354f;
+            color: #a9c7ff;
+            padding: 7px 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .botao {
+            display: block;
+            width: 100%;
+            padding: 16px 22px;
+            background-color: #365fa8;
+            border: 1px solid #4777c7;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .botao:hover {
+            background-color: #4777c7;
+        }
+
+        .linha {
+            height: 1px;
+            background-color: #343b42;
+            margin: 26px 0 18px;
+        }
+
+        .observacao {
+            font-size: 11px;
+            color: #a8b3c0;
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        .footer {
+            padding: 22px 26px;
+            border-top: 1px solid #343b42;
+            font-size: 11px;
+            line-height: 1.7;
+            color: #9daab8;
+        }
+
+        @media (max-width: 500px) {
+            .header {
+                padding: 20px;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 25px;
+            }
+
+            .slogan {
+                font-size: 8px;
+            }
+
+            .equipe-card {
+                padding: 18px;
+            }
+
+            .detalhe {
+                align-items: flex-start;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <form action="http://127.0.0.1:8000/sites/verificando_conta/" method="POST">
-        {% csrf_token %}
+    <div class="container">
 
-        <p>
-            {{ nomeDonoDaEquipe }} convidou você para participar de
-            {{ equipe }} no BidXchange.
-        </p>
+        <header class="header">
+            <div class="logo">BidXChange</div>
+            <div class="slogan">DECISÕES MELHORES</div>
+        </header>
 
-        <p>
-            Seu perfil terá o cargo {{ cargo }}.
-            Se ainda não tiver uma conta, você poderá criá-la diretamente pelo convite.
-        </p>
+        <main class="content">
 
-        <input type="hidden" name="email" value="{{ emailDoUsuario }}">
-        <input type="hidden" name="usuarioEmail" value="{{ usuarioDoTokenEmail }}">
-        <input type="hidden" name="token" value="{{ token }}">
+            <div class="categoria">
+                EQUIPES · CONVITE PARA PARTICIPAÇÃO
+            </div>
 
-        <button type="submit">
-            Revisar e aceitar convite →
-        </button>
-    </form>
+            <div class="icone">&#128101;</div>
+
+            <h1>Você recebeu um convite.</h1>
+
+            <p>
+                Olá! Você foi convidado por
+                <span class="destaque">
+                    {{ nomeDonoDaEquipe }}
+                </span>
+                para fazer parte de uma equipe
+                na plataforma
+                <span class="destaque">BidXChange</span>.
+            </p>
+
+            <form
+                action="http://127.0.0.1:8000/sites/verificando_conta/"
+                method="POST"
+            >
+                {% csrf_token %}
+
+                <div class="equipe-card">
+
+                    <div class="equipe-titulo">
+                        INFORMAÇÕES DO CONVITE
+                    </div>
+
+                    <div class="equipe-nome">
+                        {{ equipe }}
+                    </div>
+
+                    <div class="detalhe">
+                        <span class="detalhe-label">
+                            Convidado por
+                        </span>
+
+                        <span class="detalhe-valor">
+                            {{ nomeDonoDaEquipe }}
+                        </span>
+                    </div>
+
+                    <div class="detalhe">
+                        <span class="detalhe-label">
+                            Seu cargo
+                        </span>
+
+                        <span class="cargo">
+                            {{ cargo }}
+                        </span>
+                    </div>
+
+                    <div class="detalhe">
+                        <span class="detalhe-label">
+                            E-mail convidado
+                        </span>
+
+                        <span class="detalhe-valor">
+                            {{ emailDoUsuario }}
+                        </span>
+                    </div>
+
+                </div>
+
+                <p>
+                    Ao aceitar o convite, você poderá
+                    participar das atividades da equipe
+                    conforme as permissões do seu cargo.
+                </p>
+
+                <p>
+                    Se ainda não possui uma conta,
+                    poderá realizar seu cadastro
+                    durante o processo de participação.
+                </p>
+
+                <input
+                    type="hidden"
+                    name="email"
+                    value="{{ emailDoUsuario }}"
+                >
+
+                <input
+                    type="hidden"
+                    name="usuarioEmail"
+                    value="{{ usuarioDoTokenEmail }}"
+                >
+
+                <input
+                    type="hidden"
+                    name="token"
+                    value="{{ token }}"
+                >
+
+                <button type="submit" class="botao">
+                    Revisar e aceitar convite &rarr;
+                </button>
+
+            </form>
+
+            <div class="linha"></div>
+
+            <p class="observacao">
+                Este convite é pessoal e temporário.
+                Por segurança, ele poderá deixar de
+                funcionar após sua utilização ou
+                quando atingir o prazo de validade.
+            </p>
+
+            <p class="observacao" style="margin-top: 12px;">
+                Se você não conhece o remetente ou
+                não deseja participar da equipe,
+                simplesmente ignore este convite.
+            </p>
+
+        </main>
+
+        <footer class="footer">
+            Esta é uma mensagem transacional do
+            BidXChange. Não compartilhe este convite
+            com outras pessoas.
+        </footer>
+
+    </div>
 </body>
 </html>

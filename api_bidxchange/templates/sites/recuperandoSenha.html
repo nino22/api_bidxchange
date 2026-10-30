@@ -1,0 +1,251 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redefinir Senha | BidXChange</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #0d0f11;
+            color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: #181c1f;
+            border: 1px solid #343b42;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 26px;
+            border-bottom: 1px solid #343b42;
+        }
+
+        .logo {
+            font-family: Georgia, serif;
+            font-size: 23px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .slogan {
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: #b9c8e4;
+        }
+
+        .content {
+            padding: 38px 26px;
+        }
+
+        .categoria {
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #80aaff;
+            margin-bottom: 20px;
+        }
+
+        .icone {
+            width: 54px;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #243c61;
+            border: 1px solid #4269a7;
+            color: #9cc0ff;
+            font-size: 26px;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-family: Georgia, serif;
+            font-size: 29px;
+            line-height: 1.25;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #d2d7df;
+            margin-bottom: 18px;
+        }
+
+        .destaque {
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .botao {
+            display: inline-block;
+            padding: 15px 22px;
+            background-color: #365fa8;
+            border: 1px solid #4777c7;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 8px;
+        }
+
+        .botao:hover {
+            background-color: #4777c7;
+        }
+
+        .linha {
+            height: 1px;
+            background-color: #343b42;
+            margin: 26px 0 18px;
+        }
+
+        .observacao {
+            font-size: 11px;
+            color: #a8b3c0;
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        .footer {
+            padding: 22px 26px;
+            border-top: 1px solid #343b42;
+            font-size: 11px;
+            line-height: 1.7;
+            color: #9daab8;
+        }
+
+        @media (max-width: 500px) {
+            .header {
+                padding: 20px;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 25px;
+            }
+
+            .slogan {
+                font-size: 8px;
+            }
+
+            .botao {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <header class="header">
+            <div class="logo">BidXChange</div>
+            <div class="slogan">DECISÕES MELHORES</div>
+        </header>
+
+        <main class="content">
+
+            <div class="categoria">
+                CONTA · RECUPERAÇÃO DE ACESSO
+            </div>
+
+            <div class="icone">&#128274;</div>
+
+            <h1>Redefina sua senha.</h1>
+
+            <form
+                action="http://127.0.0.1:8000/sites/mudandoSenha/"
+                method="POST"
+            >
+                {% csrf_token %}
+
+                <p>
+                    Olá,
+                    <span class="destaque">
+                        {{ nomeUsuario }}
+                    </span>.
+                </p>
+
+                <p>
+                    Recebemos uma solicitação para
+                    redefinir a senha da sua conta
+                    no <span class="destaque">BidXChange</span>.
+                </p>
+
+                <p>
+                    Sua senha atual continuará válida
+                    até que o processo de redefinição
+                    seja concluído.
+                </p>
+
+                <button type="submit" class="botao">
+                    Redefinir minha senha &rarr;
+                </button>
+
+                <input
+                    type="hidden"
+                    name="nomeUsuario"
+                    value="{{ nomeUsuario }}"
+                >
+
+                <input
+                    type="hidden"
+                    name="token"
+                    value="{{ token }}"
+                >
+
+                <div class="linha"></div>
+
+                <p class="observacao">
+                    Por segurança, este link é temporário
+                    e deixa de funcionar após a alteração
+                    da senha ou o término de sua validade.
+                </p>
+
+                <p class="observacao" style="margin-top: 12px;">
+                    Se você não solicitou a redefinição,
+                    nenhuma ação é necessária.
+                    Sua senha permanecerá inalterada.
+                </p>
+
+            </form>
+
+        </main>
+
+        <footer class="footer">
+            Esta é uma mensagem transacional do
+            BidXChange. Se você não reconhece esta
+            solicitação, ignore o e-mail e não
+            compartilhe o link.
+        </footer>
+
+    </div>
+</body>
+</html>

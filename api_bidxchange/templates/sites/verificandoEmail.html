@@ -1,23 +1,178 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirme que este e-mail é seu.</title>
+    <meta name="color-scheme" content="dark">
+    <title>Confirme que este e-mail é seu</title>
 </head>
-<body>
-    <h1>Confirme que este e-mail é seu.</h1>
-    <p>Olá, {{ nomeUsuario }}.</p>
-    <p>Sua organização já foi cadastrada. Para proteger a conta e liberar o acesso, confirme este endereço de e-mail.</p>
 
-    <form action="http://127.0.0.1:8000/sites/verificadoEmail/" method="POST">
-        {% csrf_token %}
+<body style="
+    margin: 0;
+    padding: 0;
+    background-color: #0d0f11;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #f5f5f5;
+">
 
-        <input type="hidden" name="nomeUsuario" value="{{ nomeUsuario }}">
-        <input type="hidden" name="token" value="{{ token }}">
-        <button type="submit">Verificar</button>
-    </form>
-    <p>O link expira em 23 horas, 59 minutos e só pode ser usado uma vez. O botão abre uma página de confirmação antes de ativar a conta.</p>
-    <p>Esta é uma mensagem transacional do BidXchange. Se você não reconhece esta solicitação, ignore o e-mail e não compartilhe o link.</p>
+    <div style="
+        width: 100%;
+        background-color: #0d0f11;
+        padding: 26px 0;
+    ">
+
+        <div style="
+            max-width: 494px;
+            margin: 0 auto;
+            background-color: #181b1e;
+            border: 1px solid #34383d;
+        ">
+
+            <!-- Cabeçalho -->
+            <div style="
+                padding: 22px 26px;
+                border-bottom: 1px solid #34383d;
+                overflow: hidden;
+            ">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td align="left">
+                            <span style="
+                                font-family: Georgia, 'Times New Roman', serif;
+                                font-size: 23px;
+                                font-weight: bold;
+                                color: #ffffff;
+                                letter-spacing: -0.5px;
+                            ">Bid<span style="color: #4385ff;">X</span>change</span>
+                        </td>
+                        <td align="right" valign="middle">
+                            <span style="
+                                font-size: 8px;
+                                letter-spacing: 1.4px;
+                                color: #75a5ff;
+                                white-space: nowrap;
+                            ">SEGURANÇA DA CONTA</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Conteúdo principal -->
+            <div style="padding: 32px 26px 28px;">
+
+                <p style="
+                    margin: 0 0 14px;
+                    font-size: 10px;
+                    font-weight: bold;
+                    letter-spacing: 1.8px;
+                    color: #75a5ff;
+                    text-transform: uppercase;
+                ">
+                    Verificação de e-mail
+                </p>
+
+                <h1 style="
+                    margin: 0 0 18px;
+                    font-family: Georgia, 'Times New Roman', serif;
+                    font-size: 29px;
+                    line-height: 1.25;
+                    font-weight: normal;
+                    color: #ffffff;
+                ">
+                    Confirme que este e-mail é seu.
+                </h1>
+
+                <p style="
+                    margin: 0 0 16px;
+                    font-size: 13px;
+                    line-height: 1.8;
+                    color: #f0f0f0;
+                ">
+                    Olá, {{ nomeUsuario }}.
+                </p>
+
+                <p style="
+                    margin: 0 0 24px;
+                    font-size: 13px;
+                    line-height: 1.8;
+                    color: #e0e2e5;
+                ">
+                    Sua organização já foi cadastrada. Para proteger sua
+                    conta e liberar o acesso, confirme este endereço de
+                    e-mail.
+                </p>
+
+                <!-- Botão de verificação -->
+                <form action="http://127.0.0.1:8000/sites/verificadoEmail/"
+                      method="POST"
+                      style="margin: 0 0 26px;">
+
+                    {% csrf_token %}
+
+                    <input type="hidden"
+                           name="nomeUsuario"
+                           value="{{ nomeUsuario }}">
+
+                    <input type="hidden"
+                           name="token"
+                           value="{{ token }}">
+
+                    <button type="submit" style="
+                        display: inline-block;
+                        padding: 14px 22px;
+                        background-color: #4169bd;
+                        border: 1px solid #507bd2;
+                        border-radius: 0;
+                        color: #ffffff;
+                        font-family: Arial, Helvetica, sans-serif;
+                        font-size: 12px;
+                        font-weight: bold;
+                        cursor: pointer;
+                    ">
+                        Verificar e-mail &nbsp; &#8594;
+                    </button>
+                </form>
+
+                <div style="
+                    border-top: 1px solid #34383d;
+                    padding-top: 20px;
+                ">
+                    <p style="
+                        margin: 0;
+                        font-size: 10px;
+                        line-height: 1.8;
+                        color: #aeb5bf;
+                    ">
+                        O link expira em 23 horas e 59 minutos e só pode
+                        ser usado uma vez. O botão abre uma página de
+                        confirmação antes de ativar a conta.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Rodapé -->
+            <div style="
+                padding: 20px 26px;
+                border-top: 1px solid #34383d;
+                background-color: #151719;
+            ">
+                <p style="
+                    margin: 0;
+                    font-size: 10px;
+                    line-height: 1.8;
+                    color: #aeb5bf;
+                ">
+                    Esta é uma mensagem transacional do BidXchange.
+                    Se você não reconhece esta solicitação, ignore
+                    o e-mail e não compartilhe o link.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
 </body>
 </html>
