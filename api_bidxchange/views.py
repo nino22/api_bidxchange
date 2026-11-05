@@ -698,16 +698,17 @@ def enviar_convite(request):
         
         if serializer.is_valid():
             membro1 = membro.objects.get(email=serializer.data['email'])
-            equipe1 = equipe.objects.get(donoDaEquipe=Conta.objects.get(email=usuarioDoToken.email))
-            equipe_membro1 = equipe_membro.objects.get(equipe=equipe1, membro_equipe=membro1)
-            
-            return Response({'mensagem': "Este e-mail já faz parte da equipe. "}, status=status.HTTP_409_CONFLICT)    
+            equipe1 = equipe.objects.get(donoDaEquipe=usuarioDoToken)
+            equipe_membro.objects.get(equipe=equipe1, membro_equipe=membro1)
+                
+            return Response({'erro': "Este e-mail já faz parte da equipe. "}, status=status.HTTP_409_CONFLICT)   
+           
         else:
             return Response({'mensagem': "Json invalido"}, status=status.HTTP_400_BAD_REQUEST)
         
-    except (equipe_membro.DoesNotExist, membro.DoesNotExist) as e: 
+    except (equipe_membro.DoesNotExist, membro.DoesNotExist, equipe.DoesNotExist) as e: 
         convites.objects.create(email=request.data['email'], cargo=request.data['cargo'], enviado=timezone.now(), validade=timezone.now() + timedelta(weeks=1), quemEnviou=usuarioDoToken)
-        context = {'nomeDonoDaEquipe': usuarioDoToken.nomeCompleto, 'equipeNome': equipe.objects.get(donoDaEquipe=usuarioDoToken).nomeEquipe, 'cargo': request.data['cargo'], 'emailDoUsuario': request.data['email'], 'token': tokenFeito, 'usuarioDoTokenEmail': usuarioDoToken.email}
+        context = {'nomeDonoDaEquipe': usuarioDoToken.nomeCompleto, 'equipeNome': equipe.objects.get(donoDaEquipe=usuarioDoToken.id).nomeEquipe, 'cargo': request.data['cargo'], 'emailDoUsuario': request.data['email'], 'token': tokenFeito, 'usuarioDoTokenEmail': usuarioDoToken.email}
         html_content = render_to_string('sites/envioDeConvite.html', context)
                 
         text_content = strip_tags(html_content)
@@ -1262,3 +1263,58 @@ def ver_equipes(request):
             {'erro': 'Erro detalhado: ' + str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+        
+@api_view(['POST'])
+def nome_equipe(request):
+    try: 
+        parteDoToken = request.META.get('HTTP_AUTHORIZATION', '').split()
+        tokenPego = Token.objects.get(key=parteDoToken[1])
+        usuarioDoToken = Conta.objects.get(email=tokenPego.user.email)
+        nomeEquipePego = request.data.get('nomeEquipe')
+        equipe_membro.objects.get(equipe=equipe.objects.get(nomeEquipe=nomeEquipePego), membro_equipe=membro.objects.get(email=usuarioDoToken.email))
+        donoDaEquipe = Conta.objects.get(
+            id=equipe.objects.get(nomeEquipe=nomeEquipePego).donoDaEquipe_id
+        )        
+        dados = {
+            "email": donoDaEquipe.email,
+            "senha": donoDaEquipe.senha
+        }
+
+        client = Client()
+
+        resposta = client.post(
+            "/api/conta/login/",
+            data=json.dumps(dados),
+            content_type="application/json",
+            HTTP_ACCEPT="application/json"
+        )
+        
+        return Response({'token': f'Aqui está o token do dono da equipe {nomeEquipePego}: {resposta.json()['mensagem']}'}, status=status.HTTP_200_OK)
+    except Token.DoesNotExist:
+        return Response(
+            {'erro': 'Token inválido'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    except equipe_membro.DoesNotExist:
+        return Response(
+            {'erro': 'Você não é membro desta equipe'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    except Exception as e: 
+        return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND) 
+    
+@api_view(['PUT', 'PATCH'])
+def atualizar_proposta(request, id):
+    try:
+        proposta = Proposta.objects.get(id=id)
+        serializer = PropostaSerializer(proposta, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'mensagem': 'Proposta atualizada com sucesso'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'erro': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    except Proposta.DoesNotExist:
+        return Response({'erro': 'Proposta não encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'erro': 'Erro ao atualizar proposta, erro mais detalhado: ' + str(e)}, status=status.HTTP_400_BAD_REQUEST)

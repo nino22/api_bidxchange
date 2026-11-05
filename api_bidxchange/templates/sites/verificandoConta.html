@@ -152,33 +152,14 @@
 
             <header class="cabecalho">
                 <div class="logo">Bid<span>X</span>change</div>
-                <div class="slogan">DECISÕES MELHORES</div>
+
+                <div class="slogan">
+                    DECISÕES MELHORES
+                </div>
             </header>
 
             <div class="conteudo">
-                {% if mensagem %}
-                    <p class="etiqueta">EQUIPE · ACESSO</p>
-
-                    <h1>Não foi possível concluir.</h1>
-
-                    <p class="mensagem">{{ mensagem }}</p>
-                {% else %}
-                    <p class="etiqueta">
-                        EQUIPE · ACESSO CONFIRMADO
-                    </p>
-
-                    <h1>Convite Aceito</h1>
-
-                    <p class="mensagem">
-                        Sua participação na equipe foi confirmada.
-                        Você já pode continuar utilizando o BidXchange.
-                    </p>
-
-                    <div class="status">
-                        <span class="indicador"></span>
-                        Acesso confirmado
-                    </div>
-                {% endif %}
+                <h1>{{ mensagem }}</h1>
             </div>
 
             <footer class="rodape">
