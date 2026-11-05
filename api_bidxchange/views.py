@@ -173,6 +173,8 @@ def login_conta(request):
                 usuarioFeito = usuario.objects.create_user(username=conta.nomeCompleto, email=conta.email, password=conta.senha)
                 token = Token.objects.create(user=usuarioFeito)
                 return Response({'mensagem': 'Login bem-sucedido, o seu token: ' + str(token.key)}, status=status.HTTP_200_OK)    
+    except Conta.DoesNotExist:
+        return Response({'erro': 'Credenciais inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
     except Exception as e:
         return Response({'erro': 'Credenciais inválidas, erro mais detalhado: ' + str(e)}, status=status.HTTP_401_UNAUTHORIZED)
     
@@ -283,6 +285,8 @@ def encerrar_cotacao(request, id):
         cotacao.status = 'Encerrada sem escolha'
         cotacao.save()
         return Response({'mensagem': 'Cotação encerrada com sucesso'}, status=status.HTTP_200_OK)
+    except Cotacao.DoesNotExist:
+        return Response({'erro': 'Cotação não encontrada'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
     
@@ -292,6 +296,8 @@ def cotacao_id(request, id):
         cotacao = Cotacao.objects.get(id=id)
         cotacaoSerializer = CotacaoSerializer(cotacao)
         return Response(cotacaoSerializer.data, status=status.HTTP_200_OK)
+    except Cotacao.DoesNotExist:
+        return Response({'erro': 'Cotação não encontrada'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -375,6 +381,8 @@ def adicionar_favorito(request, id, categoria, nota):
         )
         
         return Response({'mensagem': 'favorito adicionado '}, status=status.HTTP_200_OK) 
+    except Conta.DoesNotExist:
+        return Response({'erro': 'Conta não encontrada'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
     
@@ -453,6 +461,8 @@ def ver_mensagens_usuario(request, id):
             })
 
         return JsonResponse(dados, safe=False)
+    except Conta.DoesNotExist:
+        return Response({'erro': 'Destinatário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'erro': 'Erro ao ver mensagens do usuário, erro mais detalhado: ' + str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -474,6 +484,8 @@ def enviar_mensagem(request, id_usuario_destinatario):
             dataEnvio=timezone.now()
         )
         return Response({'mensagem': 'Mensagem enviada com sucesso'}, status=status.HTTP_200_OK)
+    except Conta.DoesNotExist:
+        return Response({'erro': 'Destinatário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'erro': 'Erro ao enviar mensagem, erro mais detalhado: ' + str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -588,6 +600,8 @@ def ver_proposta_id(request, id):
                 status=status.HTTP_200_OK
         )                          
         
+    except Proposta.DoesNotExist:
+        return Response({'erro': 'Proposta não encontrada'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -647,6 +661,8 @@ def enviar_email_senha(request):
             {'mensagem': 'Email enviado'},
             status=status.HTTP_200_OK
         )
+    except Conta.DoesNotExist:
+        return Response({'erro': 'Conta não encontrada'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -679,6 +695,8 @@ def mudar_senha(request):
                 {'codigoDeVerificacao': 'Código de verificação incorreto'},
                 status=status.HTTP_400_BAD_REQUEST 
             )
+    except Conta.DoesNotExist:
+        return Response({'erro': 'Conta não encontrada'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)   
 
@@ -746,6 +764,8 @@ def ver_convites(request):
                 {'convites': dados},
                 status=status.HTTP_200_OK
         ) 
+    except convites.DoesNotExist:
+        return Response({"Convite não encontrado"}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -754,6 +774,8 @@ def deletar_convite(request, id):
     try:
         convites.objects.get(id=id).delete()
         return Response({"Convite deletado com sucesso"}, status=status.HTTP_200_OK)
+    except convites.DoesNotExist:
+        return Response({"Convite não encontrado"}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -989,6 +1011,12 @@ def membros_equipe(request):
         ]
                 
         return Response({'membros': 'Todos os membros da equipe: ' + str(dados)}, status=status.HTTP_200_OK)
+    except Conta.DoesNotExist:
+        return Response({'erro': 'Conta não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
+    except Token.DoesNotExist:
+        return Response({'erro': 'Token inválido ou inexistente.'}, status=status.HTTP_403_FORBIDDEN)
+    except equipe_membro.DoesNotExist:
+        return Response({'erro': 'Nenhum membro encontrado para a equipe do usuário.'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e: 
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
