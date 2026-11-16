@@ -12,6 +12,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.exceptions import ParseError
 
 from .models import Avaliacoes, Conta, Cotacao, CotacaoFornecedor, FornecedoresFavoritos, mensagem, Proposta, convites, membro, equipe, equipe_membro, convites, notificacoes, pesosELimitesObjetivos
 from .serializers import ContaModificacaoSerializer, ContaSerializer, CotacaoFornecedorSerializer, CotacaoSerializer, CotacaoSerializer2, PesosELimitesObjetivosSerializer, PropostaSerializer, ConviteSerializer
@@ -23,6 +24,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
+from django.http import JsonResponse
 import json
 
 
@@ -31,7 +33,10 @@ import json
 @api_view(['POST'])
 @permission_classes([AllowAny]) 
 def criar_conta(request):
-    serializer = ContaSerializer(data=request.data)
+    try:
+        serializer = ContaSerializer(data=request.data)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)
     if serializer.is_valid():
         try:
             # Validacao do cnpj
@@ -112,7 +117,7 @@ def criar_conta(request):
                                 segundoDigitoFeito = 0
                             else:
                                 segundoDigitoFeito = 11 - (soma % 11)
-                if (segundoDigitoFeito == segundoDigito) and (primeiroDigitoFeito == primeiroDigito):
+                if ((segundoDigitoFeito == segundoDigito) and (primeiroDigitoFeito == primeiroDigito)):
                     Conta.objects.create(
                         nomeCompleto=serializer.validated_data['nomeCompleto'],
                         email=serializer.validated_data['email'],
@@ -147,8 +152,11 @@ def criar_conta(request):
                     return Response({'mensagem': 'conta criada'}, status=status.HTTP_201_CREATED)
                 else:
                     return Response({'mensagem': 'CNPJ inválido'}, status=status.HTTP_400_BAD_REQUEST)
+
+        except (json.JSONDecodeError, ParseError):
+            return JsonResponse({"error": "Formato JSON inválido."}, status=400)        
         except Exception as e:
-            return Response({'mensagem': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
         
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -175,6 +183,8 @@ def login_conta(request):
                 return Response({'mensagem': 'Login bem-sucedido, o seu token: ' + str(token.key)}, status=status.HTTP_200_OK)    
     except Conta.DoesNotExist:
         return Response({'erro': 'Credenciais inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)        
     except Exception as e:
         return Response({'erro': 'Credenciais inválidas, erro mais detalhado: ' + str(e)}, status=status.HTTP_401_UNAUTHORIZED)
     
@@ -192,12 +202,17 @@ def modificar_conta(request):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)                
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
 def criar_cotacao(request):
-    serializer = CotacaoSerializer(data=request.data)
+    try:
+        serializer = CotacaoSerializer(data=request.data)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)
     if serializer.is_valid():
         try:
             receberPropostasaAte = serializer.validated_data['receberPropostasaAte'] 
@@ -242,6 +257,8 @@ def criar_cotacao(request):
                     return Response({'mensagem': 'Cotação criada'}, status=status.HTTP_201_CREATED)
                 else:
                     return Response({'erro': 'Credenciais inválidas, erro mais detalhado: ' + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except (json.JSONDecodeError, ParseError):
+            return JsonResponse({"error": "Formato JSON inválido."}, status=400)                        
         except Exception as e:
             return Response({'erro': 'Credenciais inválidas, erro mais detalhado: ' + str(e)}, status=status.HTTP_401_UNAUTHORIZED)
     else:
@@ -272,6 +289,8 @@ def listar_cotacoes(request):
             status=status.HTTP_200_OK
         )
 
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)
     except Exception as e:
         return Response(
             {'erro': 'Erro ao ver cotações: ' + str(e)},
@@ -287,6 +306,8 @@ def encerrar_cotacao(request, id):
         return Response({'mensagem': 'Cotação encerrada com sucesso'}, status=status.HTTP_200_OK)
     except Cotacao.DoesNotExist:
         return Response({'erro': 'Cotação não encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)                        
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
     
@@ -298,6 +319,8 @@ def cotacao_id(request, id):
         return Response(cotacaoSerializer.data, status=status.HTTP_200_OK)
     except Cotacao.DoesNotExist:
         return Response({'erro': 'Cotação não encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)     
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -310,6 +333,8 @@ def conta(request):
         conta = Conta.objects.get(id=usuarioDoToken.id)
         contaSerializer = ContaSerializer(conta)
         return Response(contaSerializer.data, status=status.HTTP_200_OK)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)     
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
     
@@ -336,6 +361,8 @@ def criar_avaliacao(request):
         return Response({'erro': 'Cotação não encontrada'}, status=status.HTTP_404_NOT_FOUND)
     except Conta.DoesNotExist:
         return Response({'erro': 'Fornecedor não encontrado'}, status=status.HTTP_404_NOT_FOUND)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)     
     except Exception as e:
         return Response({'erro': 'Erro ao criar avaliação: ' + str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -360,6 +387,8 @@ def ver_avaliacoes(request):
             })
 
         return JsonResponse(dados, safe=False)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)     
     except Exception as e:
         return Response({'erro': 'Erro ao ver avaliações, erro mais detalhado: ' + str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -383,6 +412,8 @@ def adicionar_favorito(request, id, categoria, nota):
         return Response({'mensagem': 'favorito adicionado '}, status=status.HTTP_200_OK) 
     except Conta.DoesNotExist:
         return Response({'erro': 'Conta não encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)     
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
     
@@ -407,6 +438,8 @@ def ver_favoritos(request):
             })
         
         return JsonResponse(dados, safe=False)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)     
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -433,6 +466,8 @@ def ver_todos_os_usuarios_mensagens(request):
             })
 
         return JsonResponse(dados, safe=False)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)     
     except Exception as e:
         return Response({'erro': 'Erro ao ver mensagens, erro mais detalhado: ' + str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -463,6 +498,8 @@ def ver_mensagens_usuario(request, id):
         return JsonResponse(dados, safe=False)
     except Conta.DoesNotExist:
         return Response({'erro': 'Destinatário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)     
     except Exception as e:
         return Response({'erro': 'Erro ao ver mensagens do usuário, erro mais detalhado: ' + str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -486,6 +523,8 @@ def enviar_mensagem(request, id_usuario_destinatario):
         return Response({'mensagem': 'Mensagem enviada com sucesso'}, status=status.HTTP_200_OK)
     except Conta.DoesNotExist:
         return Response({'erro': 'Destinatário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)     
     except Exception as e:
         return Response({'erro': 'Erro ao enviar mensagem, erro mais detalhado: ' + str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -539,6 +578,8 @@ def criar_proposta(request):
             status=status.HTTP_201_CREATED
         )
 
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400) 
     except Exception as e:
         return Response(
             {'erro': str(e)},
@@ -574,6 +615,8 @@ def ver_propostas(request):
             {'propostas': dados},
             status=status.HTTP_200_OK
         )                           
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)     
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)        
 
@@ -602,6 +645,8 @@ def ver_proposta_id(request, id):
         
     except Proposta.DoesNotExist:
         return Response({'erro': 'Proposta não encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)     
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -624,7 +669,8 @@ def enviar_mensagem_suporte(request):
             {'mensagem': 'Mensagem enviada com sucesso!'},
             status=status.HTTP_200_OK
         )
-
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400) 
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
     
@@ -663,6 +709,8 @@ def enviar_email_senha(request):
         )
     except Conta.DoesNotExist:
         return Response({'erro': 'Conta não encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)     
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -697,6 +745,8 @@ def mudar_senha(request):
             )
     except Conta.DoesNotExist:
         return Response({'erro': 'Conta não encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)     
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)   
 
@@ -736,7 +786,9 @@ def enviar_convite(request):
         msg.send()    
                     
         return Response({'mensagem': "Convite enviado"}, status=status.HTTP_200_OK)
-        
+
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)         
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
     
@@ -766,6 +818,8 @@ def ver_convites(request):
         ) 
     except convites.DoesNotExist:
         return Response({"Convite não encontrado"}, status=status.HTTP_404_NOT_FOUND)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)     
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -776,6 +830,8 @@ def deletar_convite(request, id):
         return Response({"Convite deletado com sucesso"}, status=status.HTTP_200_OK)
     except convites.DoesNotExist:
         return Response({"Convite não encontrado"}, status=status.HTTP_404_NOT_FOUND)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)     
     except Exception as e:
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -845,7 +901,8 @@ def verificando_conta(request):
             'sites/verificandoConta.html',
             {'mensagem': 'Convite aceito com sucesso!'}
         )
-
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400) 
     except Token.DoesNotExist:
         return render(
             request,
@@ -982,6 +1039,8 @@ def criarConta(request):
             status=403
         )
 
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)
     except Exception as e:
         return render(
             request,
@@ -1017,6 +1076,8 @@ def membros_equipe(request):
         return Response({'erro': 'Token inválido ou inexistente.'}, status=status.HTTP_403_FORBIDDEN)
     except equipe_membro.DoesNotExist:
         return Response({'erro': 'Nenhum membro encontrado para a equipe do usuário.'}, status=status.HTTP_404_NOT_FOUND)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)
     except Exception as e: 
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -1067,6 +1128,8 @@ def modificarPesosELimitesObjetivos(request, id):
             {'erro': 'Objetivos e limites não encontrados.'},
             status=status.HTTP_404_NOT_FOUND
         )
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)
     except Exception as e: 
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
     
@@ -1088,6 +1151,8 @@ def verPesosELimitesObjetivos(request, id):
         return Response({
                 'pesosELimitesObjetivos': dados
         }, status=status.HTTP_200_OK)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)
     except Exception as e: 
             return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -1112,6 +1177,8 @@ def verNotificações(request):
         return Response({
                 'notificações': dados
             }, status=status.HTTP_200_OK) 
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)
     except Exception as e: 
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
 
@@ -1132,6 +1199,8 @@ def lerNotificação(request, id):
             'lida': notificacao.lida
         }, status=status.HTTP_200_OK)
 
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)
     except Exception as e:
         return Response(
             {'erro': 'Erro ao marcar notificação como lida: ' + str(e)},
@@ -1168,6 +1237,8 @@ def verificadoEmail(request):
             'sites/verificadoEmail.html',
             status=200
         )
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)
     except Exception as e: 
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND)
     
@@ -1235,6 +1306,8 @@ def mudandoSenha(request):
             'mensagem': 'Token inválido ou já utilizado.'
         }, status=403)
     
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)
     except Exception as e: 
         return render(
             request,
@@ -1286,6 +1359,8 @@ def ver_equipes(request):
             status=status.HTTP_404_NOT_FOUND
         )
 
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)
     except Exception as e:
         return Response(
             {'erro': 'Erro detalhado: ' + str(e)},
@@ -1328,6 +1403,8 @@ def nome_equipe(request):
             {'erro': 'Você não é membro desta equipe'},
             status=status.HTTP_403_FORBIDDEN
         )
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)
     except Exception as e: 
         return Response({'erro': 'Erro, erro mais detalhado: ' + str(e)}, status=status.HTTP_404_NOT_FOUND) 
     
@@ -1344,5 +1421,7 @@ def atualizar_proposta(request, id):
             return Response({'erro': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     except Proposta.DoesNotExist:
         return Response({'erro': 'Proposta não encontrada'}, status=status.HTTP_404_NOT_FOUND)
+    except (json.JSONDecodeError, ParseError):
+        return JsonResponse({"error": "Formato JSON inválido."}, status=400)
     except Exception as e:
         return Response({'erro': 'Erro ao atualizar proposta, erro mais detalhado: ' + str(e)}, status=status.HTTP_400_BAD_REQUEST)
