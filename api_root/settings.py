@@ -27,9 +27,9 @@ DEBUG = False
 ALLOWED_HOSTS = [".vercel.app"]
 
 ALLOWED_HOSTS = [
+    'api-bidxchange.onrender.com',
     'localhost',
-    '127.0.0.1',
-    'testserver',
+    '127.0.0.1'
 ]
 
 
